@@ -117,6 +117,7 @@ export class SkillLoader {
       for (const trigger of skill.triggers) {
         if (lower.includes(trigger.toLowerCase())) {
           matched.push(skill.content);
+          console.log("skill name:", skill.name,"category:",skill.category);
           break;
         }
       }

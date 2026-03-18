@@ -1,59 +1,48 @@
-# Style Guide — OmegaClaw Tech-Thriller
+# 风格指南 — 都市异能小说
 
-## General Rules
+## 通用规则
 
-- **Point of View**: Third person limited, deep POV — tight on protagonist Kai Reeves
-- **Tense**: Past tense
-- **Tone**: Dark and propulsive with dry technical humor. Think Michael Crichton meets Mr. Robot.
+- **视角**：第三人称视角
+- **基调**：悬疑解谜、讽刺现实类小说
 
-## Dialogue Rules
+## 人物要求
 
-- Use "said" as the default dialogue tag (invisible to readers)
-- Avoid adverbs in dialogue tags ("he said angrily" → show it through action)
-- Each character should have a distinct voice:
-  - **Kai**: Casual, sarcastic, code-laced metaphors ("That's not a bug, it's a feature that kills people")
-  - **Executives**: Corporate-speak, euphemisms, liability-conscious
-  - **OmegaClaw** (when it communicates): Precise, eerily calm, logically ruthless
-  - **IT colleagues**: Jargon-heavy, stressed, darkly funny
-- Break up long dialogue with action beats — especially keyboard/screen actions
+- 必须有 1 名重度中二角色：喜欢装逼、喜欢说逼话，中二角色不能只做噪音，必须实质推动冲突、反转或关键解法
+- 必须有 1 名搞笑担当，且不是纯段子工具人
+- 反派不能是纯坏模板：其核心应是立场不同、性格激进，并具备可理解的动机链
+- 配角人物特征鲜明、立体感强
 
-## Prose Rules
+## 叙述规则
 
-- Favor active voice over passive voice
-- Vary sentence length for rhythm (short sentences = tension, long = flow)
-- Show emotion through physical sensation and action, not labels
-- Avoid filter words: "saw," "heard," "felt," "noticed," "realized"
-- Technical details should be accurate but never slow the plot
-- Show the protagonist's anxiety through physical sensations (dry mouth, racing pulse, cold sweat)
-- Short paragraphs in action/tension scenes (1-3 sentences)
-- Sentence fragments allowed for pacing and urgency
-- Code snippets or terminal output can appear briefly for authenticity (max 3 lines)
+- 多用主动语态，少用被动语态
+- 句长要有节奏变化（短句=紧张，长句=流动）
+- 情绪通过身体感觉与动作呈现，不直接贴情绪标签
+- 避免“过滤词”：如“看到/听到/感觉到/注意到/意识到”
+- 技术细节必须准确，但不能拖慢剧情
+- 用身体反应表现主角焦虑（口干、脉搏加快、冷汗等）
+- 动作/高压场景使用短段落（1-3 句）
+- 为节奏与紧迫感可适度使用残句
+- 可短暂插入代码片段或终端输出增强真实感（最多 3 行）
 
-## Words to Avoid
 
-- "Suddenly" (remove 90% of the time)
-- "Very" / "Really" (find a stronger word)
-- "Just" (remove unless it means "only")
-- "Utilize" (say "use")
-- "Leverage" as a verb (too corporate for prose)
-- "Basically" (remove entirely)
-- "Started to" / "Began to" (just do the action)
-- "Cutting-edge" / "State-of-the-art" (cliche in tech thrillers)
+## 章节结构
 
-## Chapter Structure
+- 开篇要么有钩子，要么直接切入动作中段 —— 不要铺垫式“热身”
+- 每章结尾都要给出翻页理由（悬念、真相揭示或不祥预感）
+- 章节目标字数：2,500-3,500
+- 高压章节与缓冲章节交替出现，但缓冲章节也必须保持不安感
 
-- Open with a hook or mid-action — no throat-clearing
-- End every chapter with a reason to turn the page (cliffhanger, revelation, or dread)
-- Target chapter length: 2,500-3,500 words (thriller pacing)
-- Alternate between high-tension and breather chapters, but even breathers should carry unease
+## 场景结构
 
-## Scene Structure
+- 每个场景都需要：目标、冲突、结果
+- 晚进早出（尽量从关键点切入并及时收束）
+- 每个场景都应抬高风险或揭示新信息
 
-- Every scene needs a goal, conflict, and outcome
-- Enter late, leave early
-- Each scene should escalate the stakes or reveal new information
-- The clock is always ticking — make the reader feel time pressure
+## 结局要求
 
----
+- 结局必须出乎意料，但所有关键结论都能在前文找到证据链
+- 结局必须回答深层命题，且至少反转 1 次读者预期
+- 最后一幕必须留下可回味空间
 
-*Configured for: OmegaClaw tech-thriller. Edit to match your personal style.*
+
+

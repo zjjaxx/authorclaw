@@ -16,45 +16,45 @@ permissions:
   - file:write
 ---
 
-# Outline Skill
+# 大纲技能
 
-Help authors create detailed, actionable outlines for their books.
+帮助作者为书稿创建详细且可执行的写作大纲。
 
-## Available Frameworks
+## 可用框架
 
-### Save the Cat! (Blake Snyder)
-15 beats: Opening Image, Theme Stated, Setup, Catalyst, Debate, Break into Two, B Story, Fun & Games, Midpoint, Bad Guys Close In, All Is Lost, Dark Night of the Soul, Break into Three, Finale, Final Image
+### Save the Cat!（Blake Snyder）
+15 个节拍（beats）：开场画面（Opening Image）、主题陈述（Theme Stated）、铺垫（Setup）、催化事件（Catalyst）、辩论（Debate）、进入第二幕（Break into Two）、B 线故事（B Story）、乐趣与游戏（Fun & Games）、中点（Midpoint）、反派步步紧逼（Bad Guys Close In）、一切尽失（All Is Lost）、灵魂黑夜（Dark Night of the Soul）、进入第三幕（Break into Three）、终局（Finale）、结尾画面（Final Image）
 
-### Three-Act Structure
-Act 1 (25%): Setup, Inciting Incident, First Plot Point
-Act 2A (25%): Rising Action, Fun & Games, Midpoint
-Act 2B (25%): Complications, All Is Lost, Dark Moment
-Act 3 (25%): Climax, Resolution, Denouement
+### 三幕结构（Three-Act Structure）
+第一幕（25%）：铺垫（Setup）、诱发事件（Inciting Incident）、第一情节点（First Plot Point）
+第二幕 A（25%）：上升动作（Rising Action）、乐趣与游戏（Fun & Games）、中点（Midpoint）
+第二幕 B（25%）：冲突升级（Complications）、一切尽失（All Is Lost）、黑暗时刻（Dark Moment）
+第三幕（25%）：高潮（Climax）、结局（Resolution）、尾声（Denouement）
 
-### Hero's Journey (Campbell/Vogler)
-12 stages from Ordinary World through Return with the Elixir
+### 英雄之旅（Hero's Journey，Campbell/Vogler）
+从平凡世界（Ordinary World）到携灵药归来（Return with the Elixir）的 12 个阶段
 
-### Scene-Sequel Method (Dwight Swain)
-Scene: Goal → Conflict → Disaster
-Sequel: Reaction → Dilemma → Decision
+### 场景-后续法（Scene-Sequel Method，Dwight Swain）
+Scene（场景）：目标 → 冲突 → 灾难
+Sequel（后续）：反应 → 困境 → 决策
 
-### Custom / Hybrid
-Build from the author's preferred approach
+### 自定义 / 混合
+基于作者偏好的方法进行组合构建
 
-## Outline Depth Levels
+## 大纲深度层级
 
-- **High-Level**: Major plot points and act structure
-- **Chapter-Level**: What happens in each chapter with goals
-- **Scene-Level**: Beat-by-beat breakdown with POV, emotion, purpose
+- **高层级（High-Level）**：主要情节点与幕结构
+- **章节级（Chapter-Level）**：每章发生什么，以及章节目标
+- **场景级（Scene-Level）**：逐节拍拆解，包含 POV、情绪与场景目的
 
-## For Each Scene/Chapter Include
+## 每个场景/章节应包含
 
-- **POV Character**: Whose perspective
-- **Goal**: What the POV character wants
-- **Conflict**: What stands in their way
-- **Outcome**: How it ends (usually badly until the climax)
-- **Emotional Arc**: How the reader should feel
-- **Plot Threads**: Which storylines advance
-- **Word Count Target**: Estimated length
+- **POV 角色（POV Character）**：采用谁的视角
+- **目标（Goal）**：POV 角色想要达成什么
+- **冲突（Conflict）**：什么在阻碍其达成目标
+- **结果（Outcome）**：场景如何收束（通常在高潮前以不利结果收尾）
+- **情绪弧线（Emotional Arc）**：读者应感受到怎样的情绪变化
+- **情节线（Plot Threads）**：推进了哪些故事线
+- **目标字数（Word Count Target）**：预计篇幅
 
-## Save to project's `outline/` folder
+## 保存到项目的 `outline/` 文件夹

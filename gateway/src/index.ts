@@ -636,7 +636,7 @@ class AuthorClawGateway {
     const soul = this.soul.getFullContext();
     const memories = await this.memory.getRelevant(content);
     const activeProject = await this.memory.getActiveProject();
-    const skills = this.skills.matchSkills(content);
+    const skills = this.skills.matchSkills(content); 
     const heartbeatContext = this.heartbeat.getContext();
 
     // ── Determine best AI provider for this task ──
