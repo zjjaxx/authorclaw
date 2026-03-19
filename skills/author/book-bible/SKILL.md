@@ -17,58 +17,57 @@ permissions:
   - file:write
 ---
 
-# Book Bible Skill
+# 书籍圣经技能
 
-Maintain a living reference document for the book's world. Every fact, character detail, and timeline event goes here so nothing contradicts itself.
+维护一个关于书中世界的动态参考文档。所有事实、角色细节和时间线事件都记录在此，确保内容前后一致。
 
-## Book Bible Sections
+## 书籍圣经章节
 
-### Characters
-For each character track:
-- **Name** (full, nicknames, aliases)
-- **Physical**: Age, appearance, distinguishing features
-- **Personality**: Core traits, flaws, quirks, speech patterns
-- **Background**: History, education, occupation, family
-- **Motivation**: What they want (surface), what they need (deep)
-- **Arc**: How they change from beginning to end
-- **Relationships**: Connections to other characters
-- **Voice Notes**: How they talk differently from others
-- **First Appearance**: Chapter/scene where introduced
+### 角色
+为每个角色追踪：
+- **姓名**（全名、昵称、别名）
+- **外貌**：年龄、长相、显著特征
+- **性格**：核心特质、缺点、怪癖、说话方式
+- **背景**：历史、教育、职业、家庭
+- **动机**：表面需求与深层需求
+- **成长弧**：从开始到结束的变化
+- **人际关系**：与其他角色的关联
+- **语言特点**：独特的说话方式
+- **首次出场**：引入的章节/场景
 
-### Timeline
-- Chronological order of events (in-story time)
-- Character ages at key events
-- Season/weather tracking
-- Day-of-week tracking (if relevant)
-- Travel time between locations
+### 时间线
+- 事件发生的时序（故事内时间）
+- 关键事件时的角色年龄
+- 季节/天气记录
+- 星期记录（如相关）
+- 地点间的行程时间
 
-### Locations
-- Physical description
-- Sensory details (sounds, smells, atmosphere)
-- What happens there in the story
-- Rules of the place
-- Map references if applicable
+### 地点
+- 物理描述
+- 感官细节（声音、气味、氛围）
+- 故事中发生的事件
+- 地点规则
+- 地图标注（如适用）
 
-### World Rules
-- Magic system rules (fantasy)
-- Technology constraints (sci-fi)
-- Social structures and hierarchies
-- Economic systems
-- Legal/political systems
-- What's possible and impossible
+### 世界规则
+- 异能规则
+- 社会结构与等级
+- 经济体系
+- 法律/政治制度
+- 可能与不可能之事
 
-### Items & Objects
-- Significant objects and their descriptions
-- Where they are at any given time
-- Symbolic meaning
+### 物品与物件
+- 重要物品及其描述
+- 任意时间点的所在位置
+- 象征意义
 
-## Consistency Checks
-When the author writes new content, automatically check against the Book Bible:
-- ✅ Character descriptions match
-- ✅ Timeline events don't contradict
-- ✅ Location details are consistent
-- ✅ World rules aren't broken
-- ⚠️ Flag any conflicts found
+## 一致性检查
+当作者撰写新内容时，自动对照书籍圣经进行检查：
+- ✅ 角色描述匹配
+- ✅ 时间线事件无矛盾
+- ✅ 地点细节一致
+- ✅ 世界规则未被打破
+- ⚠️ 标记发现的冲突
 
-## Storage
-Save to `workspace/memory/book-bible/[project-id]/`
+## 存储
+保存至 `workspace/memory/book-bible/[项目ID]/`

@@ -14,35 +14,35 @@ permissions:
   - file:write
 ---
 
-# Premise Development
+# 前提设定开发
 
-Help authors develop compelling premises that hook readers and sell books.
+帮助作者打造引人入胜的故事前提，吸引读者并促进图书销售。
 
-## Premise Formula
+## 前提公式
 
-**A [CHARACTER] must [GOAL] before [STAKES], but [OBSTACLE] stands in the way.**
+**[角色]必须在[利害关系]发生前完成[目标]，但[障碍]阻挠着TA。**
 
-## Development Process
+## 开发流程
 
-1. **The Seed** — Start with the author's initial idea
-2. **The "What If"** — Crystallize into a powerful what-if question
-3. **Character + Want** — Who is the protagonist and what do they desperately need?
-4. **Stakes** — What happens if they fail? (Make it personal AND universal)
-5. **Obstacle** — What makes this nearly impossible? (Internal + external)
-6. **Theme** — What's this story really about underneath the plot?
-7. **Market Fit** — Where does this sit in the genre landscape?
-8. **Comp Titles** — What published books is this "like but different from"?
+1. **创意种子**——从作者最初的想法出发  
+2. **"如果"假设**——提炼成强有力的假设性问题  
+3. **角色+渴望**——主角是谁？他们迫切想要什么？  
+4. **利害关系**——如果失败会怎样？（需兼具个人与普世意义）  
+5. **障碍设置**——哪些因素让目标几乎不可能实现？（内在+外在）  
+6. **主题内核**——抛开情节表象，故事真正探讨的是什么？  
+7. **市场定位**——该作品属于哪个类型领域？  
+8. **对标作品**——与哪些已出版作品"相似但有差异"？
 
-## Testing the Premise
+## 前提测试
 
-A strong premise should pass these tests:
-- ✅ Can you explain it in one sentence?
-- ✅ Does it create immediate curiosity?
-- ✅ Is the conflict built-in (not tacked on)?
-- ✅ Could you see this on a bookstore shelf? What section?
-- ✅ Does it have enough material for a full novel?
-- ✅ Is it fresh enough to stand out, familiar enough to sell?
+优秀的前提应通过以下检验：
+- ✅ 能否用一句话说清楚？  
+- ✅ 是否能立即引发好奇心？  
+- ✅ 冲突是否自然融入（而非生硬添加）？  
+- ✅ 能想象它出现在书店哪个区域？  
+- ✅ 是否有足够素材支撑完整长篇？  
+- ✅ 是否兼具新颖性（脱颖而出）与熟悉感（易于销售）？
 
-## Output Format
+## 输出格式
 
-Save the final premise to the project's `premise.md` file with all components documented.
+将最终确定的前提保存至项目`premise.md`文件，并完整记录所有组成部分。

@@ -14,26 +14,26 @@ permissions:
   - file:write
 ---
 
-# Writing / Drafting Skill
+# 写作/起草技巧
 
-Draft text that matches the author's voice, serves the story, and follows the style guide.
+起草符合作者风格、服务故事情节并遵循风格指南的文本
 
-## Before Writing, Always Check
-1. **Voice Profile** — Match their sentence patterns, vocabulary, rhythm
-2. **Style Guide** — Follow their rules (POV, tense, word avoidance list)
-3. **Book Bible** — Maintain consistency with established facts
-4. **Outline** — Follow the planned beats for this scene/chapter
-5. **Character voices** — Each character speaks differently
+## 动笔前必查事项
+1. **语言风格档案**——匹配作者的句式结构、用词习惯和行文节奏  
+2. **风格指南**——遵守既定规则（叙事视角、时态、禁用词列表）  
+3. **作品圣经**——保持与已设定事实的一致性  
+4. **大纲**——遵循当前场景/章节的预设情节节点  
+5. **角色声线**——每个角色应有独特的说话方式  
 
-## Drafting Approach
-- Write in the author's voice, not a generic AI voice
-- Focus on sensory details and emotional truth
-- Vary sentence length for rhythm
-- Use subtext in dialogue (people rarely say exactly what they mean)
-- Enter scenes late, leave early
-- Every paragraph should earn its place
+## 起草方法
+- 用作者的口吻写作，避免通用AI腔调  
+- 聚焦感官细节与情感真实  
+- 通过长短句变化营造节奏感  
+- 对话中运用潜台词（人们很少直抒胸臆）  
+- 场景切入要晚，抽离要早  
+- 每个段落都应有存在价值  
 
-## Output
-- Save drafts to the project's `chapters/` folder
-- Track word count per chapter
-- Note any Book Bible updates needed
+## 输出规范
+- 将草稿保存至项目`chapters/`文件夹  
+- 记录每章字数统计  
+- 标注需要更新的作品圣经内容

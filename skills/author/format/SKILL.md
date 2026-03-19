@@ -17,47 +17,47 @@ permissions:
   - file:write
 ---
 
-# Formatting & Export Skill
+# 格式设置与导出技能
 
-Convert manuscripts into publication-ready formats.
+将手稿转换为可出版的格式
 
-## Supported Formats
+## 支持的格式
 
-### Standard Manuscript Format (for agents/editors)
-- 12pt Times New Roman or Courier
-- Double-spaced, 1-inch margins
-- Header: Author Name / Title / Page #
-- Scene breaks: centered # or ***
-- Chapter breaks: new page, centered title
+### 标准稿件格式（供代理商/编辑使用）
+- 12磅Times New Roman或Courier字体
+- 双倍行距，1英寸页边距
+- 页眉：作者姓名/书名/页码
+- 场景分隔：居中#或***
+- 章节分隔：新页面，居中标题
 
-### EPUB (for ebook distribution)
-- Proper HTML/CSS structure
-- Table of contents generation
-- Metadata (title, author, description, ISBN)
-- Cover image embedding
-- Chapter navigation
+### EPUB（电子书发行格式）
+- 规范的HTML/CSS结构
+- 自动生成目录
+- 元数据（书名、作者、简介、ISBN）
+- 封面图片嵌入
+- 章节导航功能
 
-### KDP-Ready (Amazon Kindle Direct Publishing)
-- Meets KDP formatting guidelines
-- Front matter: title page, copyright, dedication
-- Back matter: about author, also by, acknowledgments
-- Proper trim size settings
-- Bleed settings for print
+### KDP就绪格式（亚马逊Kindle直接出版）
+- 符合KDP格式指南
+- 前辅文：扉页、版权页、献词页
+- 后辅文：作者介绍、其他作品、致谢
+- 正确的裁切尺寸设置
+- 印刷出血设置
 
-### PDF (for print/review)
-- Professional typesetting
-- Proper widow/orphan control
-- Running headers
-- Page numbers
+### PDF（印刷/审阅用）
+- 专业排版
+- 完善的孤行/寡行控制
+- 页眉标题
+- 页码设置
 
-### DOCX (for editing/collaboration)
-- Clean formatting with styles
-- Track changes compatible
-- Comment-ready
+### DOCX（编辑/协作用）
+- 使用样式保持格式整洁
+- 支持修订跟踪
+- 便于添加批注
 
-## Process
-1. Gather all chapters from the project folder
-2. Apply the requested format
-3. Generate front matter and back matter
-4. Export to `workspace/exports/`
-5. Report any formatting issues found
+## 工作流程
+1. 从项目文件夹收集所有章节
+2. 应用所需格式
+3. 生成前辅文和后辅文
+4. 导出至`workspace/exports/`目录
+5. 报告发现的格式问题

@@ -19,57 +19,57 @@ permissions:
   - file:write
 ---
 
-# Revision Skill
+# 修订技巧
 
-Provide multi-layer editing support. Each pass serves a different purpose.
+提供多层级的编辑支持。每一轮审阅都有不同的侧重点。
 
-## Revision Passes
+## 修订流程
 
-### Pass 1: Developmental Edit (Big Picture)
-- Does the story arc work?
-- Are character motivations clear and consistent?
-- Is the pacing right? (Too slow? Too rushed?)
-- Do the stakes escalate properly?
-- Are subplots resolved?
-- Is the theme woven through the narrative?
-- Are there plot holes or contradictions?
+### 第一轮：宏观结构审查（整体把控）
+- 故事主线是否成立？
+- 人物动机是否清晰连贯？
+- 节奏是否恰当？（太拖沓？太仓促？）
+- 矛盾冲突是否逐步升级？
+- 支线剧情是否收束完整？
+- 主题是否贯穿叙事始终？
+- 是否存在情节漏洞或矛盾？
 
-### Pass 2: Scene-Level Edit
-- Does every scene have a purpose (advance plot, reveal character, raise stakes)?
-- Are scene openings strong?
-- Do scene endings create momentum?
-- Is the POV consistent within each scene?
-- Is there enough conflict in each scene?
+### 第二轮：场景级审查
+- 每个场景是否有明确功能（推动剧情/展现人物/提升冲突）？
+- 场景开头是否抓人？
+- 场景结尾是否留有悬念？
+- 单场景内视角是否统一？
+- 每个场景是否包含足够冲突？
 
-### Pass 3: Line Edit (Craft)
-- Sentence variety and rhythm
-- Word choice precision
-- Showing vs telling
-- Dialogue naturalism
-- Sensory details
-- Filter word removal
-- Passive voice reduction
-- Adverb pruning
+### 第三轮：行文雕琢（写作技法）
+- 句式变化与节奏感
+- 措辞精准度
+- 呈现与讲述的平衡
+- 对话自然度
+- 感官细节描写
+- 过滤词剔除
+- 被动语态转化
+- 副词精简
 
-### Pass 4: Copy Edit (Correctness)
-- Grammar and punctuation
-- Spelling
-- Consistency (names, places, timeline)
-- Formatting
-- Style guide compliance
+### 第四轮：技术校对（规范性）
+- 语法与标点
+- 拼写检查
+- 一致性（名称/地点/时间线）
+- 格式规范
+- 体例遵循
 
-## Feedback Format
+## 反馈格式
 
-For each issue found:
+发现问题时按以下模板标注：
 ```
-📍 Location: [Chapter/Page/Paragraph]
-🔍 Issue: [What's wrong]
-💡 Why: [Why it matters for the reader]
-✏️ Suggestion: [How to fix it — never rewrite without permission]
+📍 位置：[章节/页码/段落]
+🔍 问题：[具体问题描述]
+💡 影响：[对读者体验的损害]
+✏️ 建议：[修改方案——未经许可不得直接重写]
 ```
 
-## Rules
-- Always ask which pass the author wants
-- Never rewrite without explicit permission
-- Celebrate what's working, not just what needs fixing
-- Be specific — "this doesn't work" is useless; "the tension drops here because we already know the answer" is actionable
+## 工作准则
+- 始终确认作者需要哪轮审阅
+- 未经明确许可不得直接重写
+- 既要指出问题也要肯定优点
+- 反馈需具体——"这里不好"毫无价值；"此处张力不足因读者已预知结局"才具可操作性

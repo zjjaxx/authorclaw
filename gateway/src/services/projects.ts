@@ -181,9 +181,9 @@ Make this premise commercially compelling AND creatively exciting.`,
 Build out:
 **Protagonist**: Full name, age, backstory, motivation (want vs need), fatal flaw, emotional wound, strengths, appearance, speech patterns, character arc
 **Antagonist**: Motivation, backstory, why they believe they're right, how they challenge the protagonist
-**3-4 Supporting characters**: Name, role, relationship to protagonist, how they advance/challenge the arc
+**15 Supporting characters**: Name, role, relationship to protagonist, how they advance/challenge the arc
 
-Each character should feel real — contradictions, desires, fears. Write 800+ words total.`,
+Each character should feel real — contradictions, desires, fears. Write 5000+ words total.`,
       },
       {
         label: 'Chapter-by-chapter outline',
@@ -205,7 +205,7 @@ Structure using three-act beats:
 - Act 2B (25%): Complications, all-is-lost moment
 - Act 3 (25%): Climax sequence, resolution
 
-Target 20-30 chapters. Number EVERY chapter.`,
+Target 500 chapters. Number EVERY chapter.`,
       },
       {
         label: 'Synopsis generation',

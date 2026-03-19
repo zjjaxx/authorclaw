@@ -19,7 +19,7 @@
       "model": "gemini-2.5-flash"
     },
     "deepseek": {
-      "model": "deepseek-chat"
+      "model": "deepseek-reasoner"
     },
     "claude": {
       "model": "claude-sonnet-4-5-20250929"
