@@ -140,7 +140,7 @@ export class AIRouter {
         tier: 'cheap',
         available: true,
         endpoint: 'https://api.deepseek.com/v1',
-        maxTokens: 4096*60,
+        maxTokens: 4096*16,
         costPer1kInput: 0.00014,
         temperature:1.5,
         costPer1kOutput: 0.00028,

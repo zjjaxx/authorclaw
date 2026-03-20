@@ -137,7 +137,7 @@ const PROJECT_TEMPLATES: ProjectTemplate[] = [
   {
     type: 'book-planning',
     label: 'Book Planning',
-    description: 'Market analysis, premise development, characters, chapter outline, and synopsis',
+    description: '都市异能小说',
     steps: [
       {
         label: 'Market & genre analysis',
@@ -205,7 +205,13 @@ Structure using three-act beats:
 - Act 2B (25%): Complications, all-is-lost moment
 - Act 3 (25%): Climax sequence, resolution
 
-Target 500 chapters. Number EVERY chapter.`,
+Target 300 chapters. Number EVERY chapter.
+
+Completeness rules:
+- Output ALL 300 chapters in full as requested.
+- Do NOT abbreviate, summarize, or show only key chapters.
+- Do NOT include phrases like "for brevity" or "remaining chapters are summarized."
+- Only provide a condensed version if the user EXPLICITLY asks for one.`,
       },
       {
         label: 'Synopsis generation',
@@ -1011,7 +1017,7 @@ export class ProjectEngine {
             // Strip large step results to save space — they're already saved as individual files
             steps: p.steps.map(s => ({
               ...s,
-              result: s.result ? s.result.substring(0, 500) + (s.result.length > 500 ? '\n\n[... truncated for state file — full output in project files ...]' : '') : undefined,
+              result: s.result,
             })),
           })),
         };
@@ -1622,11 +1628,7 @@ Description: ${description}`;
         for (const cs of completedSteps) {
           context += `### ${cs.label}\n`;
           const result = cs.result!;
-          if (result.length > 2000) {
-            context += `[...truncated...]\n${result.slice(-2000)}\n\n`;
-          } else {
-            context += `${result}\n\n`;
-          }
+          context += `${result}\n\n`;
         }
       }
     }

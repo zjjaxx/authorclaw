@@ -1,5 +1,5 @@
 AUTHORCLAW SKILLS REFERENCE
-Auto-generated on startup — 19 skills loaded
+Auto-generated on startup — 18 skills loaded
 ════════════════════════════════════════════════════════════
 
 ── Core Skills (4) ──
@@ -20,7 +20,7 @@ Auto-generated on startup — 19 skills loaded
     Continuous self-improvement loop — AuthorClaw learns from mistakes, successes, and user feedback to get better over time
     Keywords: self improve, improve yourself, learn from, what did you learn, improvement log, get better, lessons learned, self reflection, review performance
 
-── Author Skills (13) ──
+── Author Skills (12) ──
 
   beta-reader
     Simulate beta reader feedback from different reader perspectives
@@ -45,10 +45,6 @@ Auto-generated on startup — 19 skills loaded
   manuscript-hub
     Track word count, chapters, progress, streaks, and project status
     Keywords: word count, progress, manuscript status, how's my book, writing streak, new project, start a new
-
-  nonfiction-research
-    Academic source gathering, citation management, fact-checking for nonfiction
-    Keywords: nonfiction, citation, cite, bibliography, source, academic, fact check, reference
 
   outline
     Create structured outlines using popular frameworks (Save the Cat, 3-Act, Hero's Journey, custom)

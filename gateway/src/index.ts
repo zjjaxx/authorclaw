@@ -903,11 +903,10 @@ class AuthorClawGateway {
         });
 
         // Try fallback provider
-        setTimeout(() => {
-          exec();
-        }, 3000);
+        await exec();
       }
     };
+    await exec()
   }
 
   /**
