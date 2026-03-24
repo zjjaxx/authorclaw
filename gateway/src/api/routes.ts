@@ -499,7 +499,7 @@ export function createAPIRoutes(app: Application, gateway: any, rootDir?: string
     if (!engine) {
       return res.status(503).json({ error: 'Project engine not initialized' });
     }
-    const { type, title, description, context, planning, config, personaId, preferredProvider } = req.body;
+    const { type, title, description, context, planning, config, personaId, preferredProvider,chapters=200,wordsPerChapter=1500 } = req.body;
     if (!title || !description) {
       return res.status(400).json({ error: 'title and description required' });
     }
@@ -514,7 +514,7 @@ export function createAPIRoutes(app: Application, gateway: any, rootDir?: string
     // Trust the explicitly-sent type; only infer from description if no type provided
     const inferredType = type || engine.inferProjectType(description);
     if (inferredType === 'novel-pipeline') {
-      const project = engine.createNovelPipeline(title, description, config || context);
+      const project = engine.createNovelPipeline(title, description, { targetChapters: chapters, targetWordsPerChapter: wordsPerChapter });
       applyProjectOptions(project);
       return res.json({ project, planning: 'novel-pipeline' });
     }
@@ -840,47 +840,48 @@ export function createAPIRoutes(app: Application, gateway: any, rootDir?: string
         } catch { /* non-fatal */ }
 
         engine.completeStep(currentProject.id, activeStep.id, response);
+        engine.persistState();
         // Track words for Morning Briefing
         services.heartbeat.addWords(wordCount);
         results.push({ step: activeStep.label, success: true, wordCount });
 
         // ── Manuscript Assembly: combine chapter files after assembly step ──
-        if ((activeStep as any).phase === 'assembly' && currentProject.type === 'novel-pipeline') {
-          try {
-            const { existsSync: exLocal } = await import('fs');
-            const { readFile: readF } = await import('fs/promises');
-            const projectSlug = currentProject.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
-            const projectDir = join(workspaceDir, 'projects', projectSlug);
+        // if ((activeStep as any).phase === 'assembly' && currentProject.type === 'novel-pipeline') {
+        //   try {
+        //     const { existsSync: exLocal } = await import('fs');
+        //     const { readFile: readF } = await import('fs/promises');
+        //     const projectSlug = currentProject.title.toLowerCase().replace(/[^a-z0-9]+/g, '-');
+        //     const projectDir = join(workspaceDir, 'projects', projectSlug);
 
-            const writingSteps = currentProject.steps
-              .filter((s: any) => s.phase === 'writing' && s.status === 'completed')
-              .sort((a: any, b: any) => (a.chapterNumber || 0) - (b.chapterNumber || 0));
+        //     const writingSteps = currentProject.steps
+        //       .filter((s: any) => s.phase === 'writing' && s.status === 'completed')
+        //       .sort((a: any, b: any) => (a.chapterNumber || 0) - (b.chapterNumber || 0));
 
-            const chapterContents: string[] = [];
-            for (const ws of writingSteps) {
-              const expectedFile = `${(ws as any).id}-${(ws as any).label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.md`;
-              const fullPath = join(projectDir, expectedFile);
-              if (exLocal(fullPath)) {
-                const raw = await readF(fullPath, 'utf-8');
-                const content = raw.replace(/^# .+\n\n/, '');
-                chapterContents.push(`## Chapter ${(ws as any).chapterNumber || chapterContents.length + 1}\n\n${content}`);
-              }
-            }
+        //     const chapterContents: string[] = [];
+        //     for (const ws of writingSteps) {
+        //       const expectedFile = `${(ws as any).id}-${(ws as any).label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.md`;
+        //       const fullPath = join(projectDir, expectedFile);
+        //       if (exLocal(fullPath)) {
+        //         const raw = await readF(fullPath, 'utf-8');
+        //         const content = raw.replace(/^# .+\n\n/, '');
+        //         chapterContents.push(`## Chapter ${(ws as any).chapterNumber || chapterContents.length + 1}\n\n${content}`);
+        //       }
+        //     }
 
-            if (chapterContents.length > 0) {
-              const manuscriptMd = `# ${currentProject.title}\n\n` + chapterContents.join('\n\n---\n\n');
-              await writeFile(join(projectDir, 'manuscript.md'), manuscriptMd, 'utf-8');
+        //     if (chapterContents.length > 0) {
+        //       const manuscriptMd = `# ${currentProject.title}\n\n` + chapterContents.join('\n\n---\n\n');
+        //       await writeFile(join(projectDir, 'manuscript.md'), manuscriptMd, 'utf-8');
 
-              const docxBuffer = await generateDocxBuffer({
-                title: currentProject.title,
-                author: 'AuthorClaw',
-                content: manuscriptMd,
-              });
-              await writeFile(join(projectDir, 'manuscript.docx'), docxBuffer);
-              console.log(`  [assembly] Manuscript assembled: ${chapterContents.length} chapters`);
-            }
-          } catch { /* non-fatal */ }
-        }
+        //       const docxBuffer = await generateDocxBuffer({
+        //         title: currentProject.title,
+        //         author: 'AuthorClaw',
+        //         content: manuscriptMd,
+        //       });
+        //       await writeFile(join(projectDir, 'manuscript.docx'), docxBuffer);
+        //       console.log(`  [assembly] Manuscript assembled: ${chapterContents.length} chapters`);
+        //     }
+        //   } catch { /* non-fatal */ }
+        // }
 
         // Re-check pause AFTER step completes (catches /stop sent during long AI call)
         const freshProject = engine.getProject(req.params.id);
