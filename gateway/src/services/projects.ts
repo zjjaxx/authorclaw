@@ -13,11 +13,11 @@
  * Pipeline Mode: Chain all 6 phases from a single idea + persona
  */
 
-import { AuthorOSService } from './author-os.js';
-import type { SkillCatalogEntry } from '../skills/loader.js';
-import { readFile } from 'fs/promises';
-import { existsSync, readFileSync } from 'fs';
-import { join } from 'path';
+import { AuthorOSService } from "./author-os.js";
+import type { SkillCatalogEntry } from "../skills/loader.js";
+import { readFile } from "fs/promises";
+import { existsSync, readFileSync } from "fs";
+import { join } from "path";
 
 // ═══════════════════════════════════════════════════════════
 // Types
@@ -30,10 +30,15 @@ import { join } from 'path';
 export type AICompleteFunc = (request: {
   provider: string;
   system: string;
-  messages: Array<{ role: 'user' | 'assistant'; content: string }>;
+  messages: Array<{ role: "user" | "assistant"; content: string }>;
   maxTokens?: number;
   temperature?: number;
-}) => Promise<{ text: string; tokensUsed: number; estimatedCost: number; provider: string }>;
+}) => Promise<{
+  text: string;
+  tokensUsed: number;
+  estimatedCost: number;
+  provider: string;
+}>;
 
 /**
  * Callback to select the best provider for a task type
@@ -41,48 +46,48 @@ export type AICompleteFunc = (request: {
 export type AISelectProviderFunc = (taskType: string) => { id: string };
 
 export type ProjectType =
-  | 'book-planning'
-  | 'book-bible'
-  | 'book-production'
-  | 'deep-revision'
-  | 'format-export'
-  | 'book-launch'
-  | 'novel-pipeline'
-  | 'pipeline'
-  | 'custom';
+  | "book-planning"
+  | "book-bible"
+  | "book-production"
+  | "deep-revision"
+  | "format-export"
+  | "book-launch"
+  | "novel-pipeline"
+  | "pipeline"
+  | "custom";
 
 export interface Project {
   id: string;
   type: ProjectType;
   title: string;
   description: string;
-  status: 'pending' | 'active' | 'paused' | 'completed' | 'failed';
+  status: "pending" | "active" | "paused" | "completed" | "failed";
   progress: number; // 0-100
   steps: ProjectStep[];
   createdAt: string;
   updatedAt: string;
   completedAt?: string;
   context: Record<string, any>;
-  personaId?: string;     // Author persona assigned to this project
+  personaId?: string; // Author persona assigned to this project
   preferredProvider?: string; // Override AI provider: 'gemini' | 'claude' | 'openai' | 'deepseek' | 'ollama' | null (auto)
-  pipelineId?: string;    // Parent pipeline ID (if part of a pipeline)
+  pipelineId?: string; // Parent pipeline ID (if part of a pipeline)
   pipelinePhase?: number; // Phase order within pipeline (1-6)
 }
 
 export interface ProjectStep {
   id: string;
   label: string;
-  skill?: string;         // Matched skill name
+  skill?: string; // Matched skill name
   toolSuggestion?: string; // Author OS tool to use
-  taskType: string;        // AI router task type (for tier routing)
-  prompt: string;          // The prompt to send to AI
-  status: 'pending' | 'active' | 'completed' | 'skipped' | 'failed';
+  taskType: string; // AI router task type (for tier routing)
+  prompt: string; // The prompt to send to AI
+  status: "pending" | "active" | "completed" | "skipped" | "failed";
   result?: string;
   error?: string;
   // Novel pipeline fields:
-  phase?: string;           // 'premise' | 'bible' | 'outline' | 'writing' | 'revision' | 'assembly'
+  phase?: string; // 'premise' | 'bible' | 'outline' | 'writing' | 'revision' | 'assembly'
   wordCountTarget?: number; // Target words for this step (triggers multi-pass continuation)
-  chapterNumber?: number;   // Chapter number for writing/revision steps
+  chapterNumber?: number; // Chapter number for writing/revision steps
 }
 
 export interface NovelPipelineConfig {
@@ -93,7 +98,7 @@ export interface NovelPipelineConfig {
   setting?: string;
   tone?: string;
   tense?: string;
-  targetChapters?: number;        // default 25
+  targetChapters?: number; // default 25
   targetWordsPerChapter?: number; // default 3000
   protagonistName?: string;
   antagonistName?: string;
@@ -118,16 +123,16 @@ interface ProjectTemplate {
 
 // Valid task types that the AI router understands (for planProject prompt)
 const TASK_TYPE_MAP: Record<string, string> = {
-  general: 'Basic tasks, chat, simple questions',
-  research: 'Web research, fact-finding',
-  creative_writing: 'Prose writing, chapters, scenes',
-  revision: 'Editing, rewriting, feedback',
-  style_analysis: 'Voice/style matching',
-  marketing: 'Blurbs, pitches, ads',
-  outline: 'Story structure, beat sheets',
-  book_bible: 'World building, characters',
-  consistency: 'Cross-chapter analysis',
-  final_edit: 'Final polish, proofreading',
+  general: "Basic tasks, chat, simple questions",
+  research: "Web research, fact-finding",
+  creative_writing: "Prose writing, chapters, scenes",
+  revision: "Editing, rewriting, feedback",
+  style_analysis: "Voice/style matching",
+  marketing: "Blurbs, pitches, ads",
+  outline: "Story structure, beat sheets",
+  book_bible: "World building, characters",
+  consistency: "Cross-chapter analysis",
+  final_edit: "Final polish, proofreading",
 };
 
 const PROJECT_TEMPLATES: ProjectTemplate[] = [
@@ -135,14 +140,14 @@ const PROJECT_TEMPLATES: ProjectTemplate[] = [
   // Template 1: Book Planning
   // ═══════════════════════════════════════════════════════════
   {
-    type: 'book-planning',
-    label: 'Book Planning',
-    description: '都市异能小说',
+    type: "book-planning",
+    label: "Book Planning",
+    description: "都市异能小说",
     steps: [
       {
-        label: 'Market & genre analysis',
-        skill: 'research',
-        taskType: 'research',
+        label: "Market & genre analysis",
+        skill: "research",
+        taskType: "research",
         promptTemplate: `Analyze the current market for this type of book: {{description}}
 
 Research and report on:
@@ -156,9 +161,9 @@ Research and report on:
 Be specific and actionable. This informs every decision that follows.`,
       },
       {
-        label: 'Develop premise',
-        skill: 'premise',
-        taskType: 'general',
+        label: "Develop premise",
+        skill: "premise",
+        taskType: "general",
         promptTemplate: `Develop a commercially viable premise for: {{description}}
 
 Using the market analysis, create:
@@ -173,9 +178,9 @@ Using the market analysis, create:
 Make this premise commercially compelling AND creatively exciting.`,
       },
       {
-        label: 'Character profiles',
-        skill: 'book-bible',
-        taskType: 'book_bible',
+        label: "Character profiles",
+        skill: "book-bible",
+        taskType: "book_bible",
         promptTemplate: `Create detailed character profiles for: {{description}}
 
 Build out:
@@ -186,9 +191,9 @@ Build out:
 Each character should feel real — contradictions, desires, fears. Write 5000+ words total.`,
       },
       {
-        label: 'Chapter-by-chapter outline',
-        skill: 'outline',
-        taskType: 'outline',
+        label: "Chapter-by-chapter outline",
+        skill: "outline",
+        taskType: "outline",
         promptTemplate: `Create a detailed chapter-by-chapter outline for: {{description}}
 
 For each chapter include:
@@ -214,9 +219,9 @@ Completeness rules:
 - Only provide a condensed version if the user EXPLICITLY asks for one.`,
       },
       {
-        label: 'Synopsis generation',
-        skill: 'outline',
-        taskType: 'general',
+        label: "Synopsis generation",
+        skill: "outline",
+        taskType: "general",
         promptTemplate: `Generate professional synopses for: {{description}}
 
 Create two versions:
@@ -231,9 +236,9 @@ Both should:
 - Feel compelling to read, not just dutiful`,
       },
       {
-        label: 'Review & refine plan',
-        skill: 'revise',
-        taskType: 'revision',
+        label: "Review & refine plan",
+        skill: "revise",
+        taskType: "revision",
         promptTemplate: `Review the complete book plan we've built. Check for:
 
 1. **Plot holes**: Any logical gaps in the outline?
@@ -252,14 +257,15 @@ Provide specific improvements, not vague suggestions. Reference chapter numbers 
   // Template 2: Book Bible
   // ═══════════════════════════════════════════════════════════
   {
-    type: 'book-bible',
-    label: 'Book Bible',
-    description: 'World-building, character bible, continuity tracker, themes, and style reference',
+    type: "book-bible",
+    label: "Book Bible",
+    description:
+      "World-building, character bible, continuity tracker, themes, and style reference",
     steps: [
       {
-        label: 'World-building document',
-        skill: 'book-bible',
-        taskType: 'book_bible',
+        label: "World-building document",
+        skill: "book-bible",
+        taskType: "book_bible",
         promptTemplate: `Create a comprehensive world-building document for: {{description}}
 
 Include:
@@ -275,9 +281,9 @@ Include:
 Write 1000+ words. Be specific enough that a writer could maintain consistency across 80,000 words.`,
       },
       {
-        label: 'Character bible',
-        skill: 'book-bible',
-        taskType: 'book_bible',
+        label: "Character bible",
+        skill: "book-bible",
+        taskType: "book_bible",
         promptTemplate: `Create deep character profiles for: {{description}}
 
 For EACH major character (protagonist, antagonist, 3-4 supporting):
@@ -293,9 +299,9 @@ For EACH major character (protagonist, antagonist, 3-4 supporting):
 Also create a **relationship web** showing how all characters connect.`,
       },
       {
-        label: 'Series continuity tracker',
-        skill: 'book-bible',
-        taskType: 'consistency',
+        label: "Series continuity tracker",
+        skill: "book-bible",
+        taskType: "consistency",
         promptTemplate: `Create a continuity tracking document for: {{description}}
 
 This is the master reference for maintaining consistency. Include:
@@ -310,9 +316,9 @@ This is the master reference for maintaining consistency. Include:
 Format as a reference guide a writer can quickly scan while writing.`,
       },
       {
-        label: 'Theme & motif guide',
-        skill: 'book-bible',
-        taskType: 'book_bible',
+        label: "Theme & motif guide",
+        skill: "book-bible",
+        taskType: "book_bible",
         promptTemplate: `Create a theme and motif guide for: {{description}}
 
 Analyze and document:
@@ -327,9 +333,9 @@ Analyze and document:
 This guide ensures every scene serves the deeper meaning of the book.`,
       },
       {
-        label: 'Style & tone reference',
-        skill: 'style-clone',
-        taskType: 'style_analysis',
+        label: "Style & tone reference",
+        skill: "style-clone",
+        taskType: "style_analysis",
         promptTemplate: `Create a style and tone reference guide for: {{description}}
 
 Document the writing voice this book requires:
@@ -351,9 +357,10 @@ If an author persona is assigned, integrate their voice profile into this guide.
   // Template 3: Book Production (stub — chapters generated dynamically)
   // ═══════════════════════════════════════════════════════════
   {
-    type: 'book-production',
-    label: 'Book Production',
-    description: 'Write chapters sequentially with full context injection — write, self-review, and compile',
+    type: "book-production",
+    label: "Book Production",
+    description:
+      "Write chapters sequentially with full context injection — write, self-review, and compile",
     steps: [], // Dynamic: chapters auto-generated based on config (like novel-pipeline writing phase)
   },
 
@@ -361,15 +368,16 @@ If an author persona is assigned, integrate their voice profile into this guide.
   // Template 4: Deep Revision (21 steps, 3 passes)
   // ═══════════════════════════════════════════════════════════
   {
-    type: 'deep-revision',
-    label: 'Deep Revision',
-    description: '21-step, 3-pass manuscript revision — macro (structural), medium (scene-level), micro (line-level) + beta reader panel',
+    type: "deep-revision",
+    label: "Deep Revision",
+    description:
+      "21-step, 3-pass manuscript revision — macro (structural), medium (scene-level), micro (line-level) + beta reader panel",
     steps: [
       // ── Pass 1: Macro / Structural (7 steps) ──
       {
-        label: 'Plot structure analysis',
-        skill: 'revise',
-        taskType: 'revision',
+        label: "Plot structure analysis",
+        skill: "revise",
+        taskType: "revision",
         promptTemplate: `Analyze the plot structure of this manuscript:
 
 **Manuscript**: "{{title}}" — {{description}}
@@ -386,9 +394,9 @@ Evaluate:
 Rate structural integrity: 1-10. Provide specific chapter references for every issue.`,
       },
       {
-        label: 'Pacing audit',
-        skill: 'revise',
-        taskType: 'revision',
+        label: "Pacing audit",
+        skill: "revise",
+        taskType: "revision",
         promptTemplate: `Create a chapter-by-chapter pacing heatmap for:
 
 **Manuscript**: "{{title}}" — {{description}}
@@ -405,9 +413,9 @@ Then analyze:
 End with top 3 pacing fixes, prioritized by impact.`,
       },
       {
-        label: 'Character arc consistency',
-        skill: 'revise',
-        taskType: 'revision',
+        label: "Character arc consistency",
+        skill: "revise",
+        taskType: "revision",
         promptTemplate: `Check character arc consistency across:
 
 **Manuscript**: "{{title}}" — {{description}}
@@ -422,9 +430,9 @@ For each major character:
 Flag any character who doesn't change, changes too abruptly, or acts inconsistently.`,
       },
       {
-        label: 'Theme coherence review',
-        skill: 'revise',
-        taskType: 'revision',
+        label: "Theme coherence review",
+        skill: "revise",
+        taskType: "revision",
         promptTemplate: `Analyze thematic coherence in:
 
 **Manuscript**: "{{title}}" — {{description}}
@@ -437,9 +445,9 @@ Flag any character who doesn't change, changes too abruptly, or acts inconsisten
 6. **Heavy-handedness**: Are there moments where theme becomes preachy?`,
       },
       {
-        label: 'World-building continuity scan',
-        skill: 'revise',
-        taskType: 'consistency',
+        label: "World-building continuity scan",
+        skill: "revise",
+        taskType: "consistency",
         promptTemplate: `Run a world-building continuity scan on:
 
 **Manuscript**: "{{title}}" — {{description}}
@@ -455,9 +463,9 @@ Check for:
 For each issue: where it appears, what the contradiction is, and how to fix it. Organized by severity.`,
       },
       {
-        label: 'Stakes escalation verification',
-        skill: 'revise',
-        taskType: 'revision',
+        label: "Stakes escalation verification",
+        skill: "revise",
+        taskType: "revision",
         promptTemplate: `Verify that stakes escalate properly in:
 
 **Manuscript**: "{{title}}" — {{description}}
@@ -473,9 +481,9 @@ Analyze:
 Flag any moment where stakes plateau, decrease, or feel artificial.`,
       },
       {
-        label: 'Subplot tracking & resolution',
-        skill: 'revise',
-        taskType: 'revision',
+        label: "Subplot tracking & resolution",
+        skill: "revise",
+        taskType: "revision",
         promptTemplate: `Track all subplots in:
 
 **Manuscript**: "{{title}}" — {{description}}
@@ -495,9 +503,9 @@ Also check:
 
       // ── Pass 2: Medium / Scene-Level (7 steps) ──
       {
-        label: 'Dialogue authenticity pass',
-        skill: 'dialogue',
-        taskType: 'revision',
+        label: "Dialogue authenticity pass",
+        skill: "dialogue",
+        taskType: "revision",
         promptTemplate: `Perform a dialogue authenticity audit on:
 
 **Manuscript**: "{{title}}" — {{description}}
@@ -512,9 +520,9 @@ Also check:
 Suggest rewrites for the 5 worst dialogue passages.`,
       },
       {
-        label: 'Show-don\'t-tell audit',
-        skill: 'revise',
-        taskType: 'revision',
+        label: "Show-don't-tell audit",
+        skill: "revise",
+        taskType: "revision",
         promptTemplate: `Scan for show vs tell issues in:
 
 **Manuscript**: "{{title}}" — {{description}}
@@ -526,9 +534,9 @@ For the 10 worst offenders: quote the original → write a "showing" rewrite →
 Note: some telling is FINE. Only flag cases where showing would genuinely improve the experience.`,
       },
       {
-        label: 'Scene tension & conflict check',
-        skill: 'revise',
-        taskType: 'revision',
+        label: "Scene tension & conflict check",
+        skill: "revise",
+        taskType: "revision",
         promptTemplate: `Check every scene for tension and conflict:
 
 **Manuscript**: "{{title}}" — {{description}}
@@ -548,9 +556,9 @@ Flag any scene where:
 These are scenes that may need to be cut or strengthened.`,
       },
       {
-        label: 'Transition smoothness review',
-        skill: 'revise',
-        taskType: 'revision',
+        label: "Transition smoothness review",
+        skill: "revise",
+        taskType: "revision",
         promptTemplate: `Review all transitions in:
 
 **Manuscript**: "{{title}}" — {{description}}
@@ -565,9 +573,9 @@ Check:
 Flag the 5 roughest transitions and suggest smoother alternatives.`,
       },
       {
-        label: 'Emotional beat mapping',
-        skill: 'revise',
-        taskType: 'revision',
+        label: "Emotional beat mapping",
+        skill: "revise",
+        taskType: "revision",
         promptTemplate: `Map the emotional journey in:
 
 **Manuscript**: "{{title}}" — {{description}}
@@ -585,9 +593,9 @@ Then assess:
 - Are there enough quiet, intimate moments between action?`,
       },
       {
-        label: 'Sensory detail enhancement',
-        skill: 'revise',
-        taskType: 'revision',
+        label: "Sensory detail enhancement",
+        skill: "revise",
+        taskType: "revision",
         promptTemplate: `Audit sensory details in:
 
 **Manuscript**: "{{title}}" — {{description}}
@@ -601,9 +609,9 @@ Then assess:
 Identify 5-10 scenes that would benefit most from sensory enrichment and suggest specific details.`,
       },
       {
-        label: 'Info-dump & exposition detection',
-        skill: 'revise',
-        taskType: 'revision',
+        label: "Info-dump & exposition detection",
+        skill: "revise",
+        taskType: "revision",
         promptTemplate: `Scan for info-dumps and exposition problems in:
 
 **Manuscript**: "{{title}}" — {{description}}
@@ -620,9 +628,9 @@ For each: quote the passage, explain why it's a problem, and suggest how to weav
 
       // ── Pass 3: Micro / Line-Level (5 steps) ──
       {
-        label: 'Copy edit pass',
-        skill: 'revise',
-        taskType: 'final_edit',
+        label: "Copy edit pass",
+        skill: "revise",
+        taskType: "final_edit",
         promptTemplate: `Perform a copy edit pass on:
 
 **Manuscript**: "{{title}}" — {{description}}
@@ -639,9 +647,9 @@ Check for:
 List all errors found with chapter/location and correction.`,
       },
       {
-        label: 'Line edit pass',
-        skill: 'revise',
-        taskType: 'final_edit',
+        label: "Line edit pass",
+        skill: "revise",
+        taskType: "final_edit",
         promptTemplate: `Perform a line edit pass on:
 
 **Manuscript**: "{{title}}" — {{description}}
@@ -656,9 +664,9 @@ Focus on:
 Show 10 before/after examples of line-level improvements.`,
       },
       {
-        label: 'Repetition finder',
-        skill: 'revise',
-        taskType: 'revision',
+        label: "Repetition finder",
+        skill: "revise",
+        taskType: "revision",
         promptTemplate: `Find overused words and phrases in:
 
 **Manuscript**: "{{title}}" — {{description}}
@@ -674,9 +682,9 @@ Report on:
 For each: word/phrase, frequency, example, and suggested alternatives.`,
       },
       {
-        label: 'Crutch word elimination',
-        skill: 'revise',
-        taskType: 'final_edit',
+        label: "Crutch word elimination",
+        skill: "revise",
+        taskType: "final_edit",
         promptTemplate: `Eliminate crutch words from:
 
 **Manuscript**: "{{title}}" — {{description}}
@@ -693,9 +701,9 @@ Specific targets:
 Provide a prioritized cut list with estimated word savings.`,
       },
       {
-        label: 'Sensitivity read',
-        skill: 'revise',
-        taskType: 'revision',
+        label: "Sensitivity read",
+        skill: "revise",
+        taskType: "revision",
         promptTemplate: `Perform a sensitivity read on:
 
 **Manuscript**: "{{title}}" — {{description}}
@@ -713,9 +721,9 @@ Note: This is a preliminary read. For publication, a human sensitivity reader is
 
       // ── Final: Beta Readers + Synthesis ──
       {
-        label: 'Beta reader panel',
-        skill: 'beta-reader',
-        taskType: 'revision',
+        label: "Beta reader panel",
+        skill: "beta-reader",
+        taskType: "revision",
         promptTemplate: `You are a panel of 5 beta readers with different perspectives. Read and respond:
 
 **Manuscript**: "{{title}}" — {{description}}
@@ -729,9 +737,9 @@ Note: This is a preliminary read. For publication, a human sensitivity reader is
 Keep each reader's response to 200-300 words. Be specific with chapter references.`,
       },
       {
-        label: 'Final revision action plan',
-        skill: 'revise',
-        taskType: 'revision',
+        label: "Final revision action plan",
+        skill: "revise",
+        taskType: "revision",
         promptTemplate: `Synthesize ALL 20 prior revision passes into a final action plan:
 
 **Manuscript**: "{{title}}" — {{description}}
@@ -755,14 +763,15 @@ Make every recommendation specific and actionable with chapter references.`,
   // Template 5: Format & Export
   // ═══════════════════════════════════════════════════════════
   {
-    type: 'format-export',
-    label: 'Format & Export',
-    description: 'Generate front/back matter and export as DOCX, EPUB, and PDF — KDP-ready formatting',
+    type: "format-export",
+    label: "Format & Export",
+    description:
+      "Generate front/back matter and export as DOCX, EPUB, and PDF — KDP-ready formatting",
     steps: [
       {
-        label: 'Generate front matter',
-        skill: 'format',
-        taskType: 'general',
+        label: "Generate front matter",
+        skill: "format",
+        taskType: "general",
         promptTemplate: `Generate professional front matter for: {{description}}
 
 Create:
@@ -775,9 +784,9 @@ Create:
 Format each as clean markdown sections with clear dividers.`,
       },
       {
-        label: 'Generate back matter',
-        skill: 'format',
-        taskType: 'marketing',
+        label: "Generate back matter",
+        skill: "format",
+        taskType: "marketing",
         promptTemplate: `Generate professional back matter for: {{description}}
 
 Create:
@@ -790,9 +799,9 @@ Create:
 Format each as clean markdown. Keep the tone professional and genre-appropriate.`,
       },
       {
-        label: 'Compile & export DOCX',
-        skill: 'format',
-        taskType: 'general',
+        label: "Compile & export DOCX",
+        skill: "format",
+        taskType: "general",
         promptTemplate: `Compile the manuscript with front and back matter into a professional DOCX format for: {{description}}
 
 The export system will:
@@ -804,9 +813,9 @@ The export system will:
 Confirm the manuscript is ready for export. List the chapter count, estimated word count, and any missing sections that should be addressed before publishing.`,
       },
       {
-        label: 'Compile & export EPUB',
-        skill: 'format',
-        taskType: 'general',
+        label: "Compile & export EPUB",
+        skill: "format",
+        taskType: "general",
         promptTemplate: `Generate EPUB export for: {{description}}
 
 The export system will:
@@ -825,14 +834,15 @@ Confirm EPUB readiness. Note any elements that may not render well on e-readers.
   // Template 6: Book Launch
   // ═══════════════════════════════════════════════════════════
   {
-    type: 'book-launch',
-    label: 'Book Launch',
-    description: 'Back cover blurb, Amazon description, keywords, categories, ad copy, and social media posts',
+    type: "book-launch",
+    label: "Book Launch",
+    description:
+      "Back cover blurb, Amazon description, keywords, categories, ad copy, and social media posts",
     steps: [
       {
-        label: 'Back cover blurb',
-        skill: 'blurb-writer',
-        taskType: 'marketing',
+        label: "Back cover blurb",
+        skill: "blurb-writer",
+        taskType: "marketing",
         promptTemplate: `Write compelling book blurbs for: {{description}}
 
 Create 3 versions:
@@ -848,9 +858,9 @@ Each should:
 - Match the expectations of the target genre audience`,
       },
       {
-        label: 'Amazon book description',
-        skill: 'blurb-writer',
-        taskType: 'marketing',
+        label: "Amazon book description",
+        skill: "blurb-writer",
+        taskType: "marketing",
         promptTemplate: `Create an Amazon-optimized book description for: {{description}}
 
 Format with HTML tags Amazon supports:
@@ -868,9 +878,9 @@ Structure:
 Also include a review quote template: "___ ★★★★★" format.`,
       },
       {
-        label: 'Amazon categories & keywords',
-        skill: 'research',
-        taskType: 'research',
+        label: "Amazon categories & keywords",
+        skill: "research",
+        taskType: "research",
         promptTemplate: `Research Amazon categories and keywords for: {{description}}
 
 Provide:
@@ -882,9 +892,9 @@ Provide:
 Explain WHY each keyword/category was chosen — what search behavior does it target?`,
       },
       {
-        label: 'Ad copy generation',
-        skill: 'ad-copy',
-        taskType: 'marketing',
+        label: "Ad copy generation",
+        skill: "ad-copy",
+        taskType: "marketing",
         promptTemplate: `Create advertising copy for: {{description}}
 
 **Amazon Ads (AMS)**:
@@ -903,9 +913,9 @@ Explain WHY each keyword/category was chosen — what search behavior does it ta
 Each variant should use a different angle: emotion, trope, comp title, question, urgency.`,
       },
       {
-        label: 'Social media launch posts',
-        skill: 'blurb-writer',
-        taskType: 'marketing',
+        label: "Social media launch posts",
+        skill: "blurb-writer",
+        taskType: "marketing",
         promptTemplate: `Create social media launch content for: {{description}}
 
 **Instagram/BookStagram** (3 posts):
@@ -929,9 +939,9 @@ Each variant should use a different angle: emotion, trope, comp title, question,
 Include relevant hashtags for each platform.`,
       },
       {
-        label: 'Launch checklist & timeline',
-        skill: 'format',
-        taskType: 'general',
+        label: "Launch checklist & timeline",
+        skill: "format",
+        taskType: "general",
         promptTemplate: `Create a book launch checklist and timeline for: {{description}}
 
 **Pre-Launch (4-6 weeks before)**:
@@ -948,9 +958,9 @@ Include relevant hashtags for each platform.`,
 Include specific actionable items with dates relative to launch day (L-30, L-14, L-7, L-Day, L+7, etc.)`,
       },
       {
-        label: 'Book cover concepts',
-        skill: 'book-launch',
-        taskType: 'marketing',
+        label: "Book cover concepts",
+        skill: "book-launch",
+        taskType: "marketing",
         promptTemplate: `Generate 2 book cover concept ideas for: {{description}}
 
 For each concept provide:
@@ -969,9 +979,9 @@ Mark the recommended concept clearly. Focus on genre-appropriate design that wou
   // Novel Pipeline (kept from V3 — auto-generates 30+ steps)
   // ═══════════════════════════════════════════════════════════
   {
-    type: 'novel-pipeline',
-    label: 'Full Novel Pipeline',
-    description: '都市异能小说',
+    type: "novel-pipeline",
+    label: "Full Novel Pipeline",
+    description: "都市异能小说",
     steps: [], // 30+ steps are auto-generated by createNovelPipeline()
   },
 ];
@@ -995,8 +1005,13 @@ export class ProjectEngine {
   constructor(authorOS?: AuthorOSService, rootDir?: string) {
     this.authorOS = authorOS || null;
     this.rootDir = rootDir || process.cwd();
-    this.stateFilePath = join(this.rootDir, 'workspace', '.config', 'projects-state.json');
-    this.loadState();  // Restore projects from disk on startup
+    this.stateFilePath = join(
+      this.rootDir,
+      "workspace",
+      ".config",
+      "projects-state.json",
+    );
+    this.loadState(); // Restore projects from disk on startup
   }
 
   /**
@@ -1007,24 +1022,24 @@ export class ProjectEngine {
     if (this.saveDebounceTimer) clearTimeout(this.saveDebounceTimer);
     this.saveDebounceTimer = setTimeout(async () => {
       try {
-        const { mkdir } = await import('fs/promises');
-        const { dirname } = await import('path');
+        const { mkdir } = await import("fs/promises");
+        const { dirname } = await import("path");
         await mkdir(dirname(this.stateFilePath), { recursive: true });
         const state = {
           nextId: this.nextId,
-          projects: Array.from(this.projects.values()).map(p => ({
+          projects: Array.from(this.projects.values()).map((p) => ({
             ...p,
             // Strip large step results to save space — they're already saved as individual files
-            steps: p.steps.map(s => ({
+            steps: p.steps.map((s) => ({
               ...s,
               result: s.result,
             })),
           })),
         };
-        const { writeFile: wf } = await import('fs/promises');
-        await wf(this.stateFilePath, JSON.stringify(state, null, 2), 'utf-8');
+        const { writeFile: wf } = await import("fs/promises");
+        await wf(this.stateFilePath, JSON.stringify(state, null, 2), "utf-8");
       } catch (err) {
-        console.error('  ⚠ Failed to persist project state:', err);
+        console.error("  ⚠ Failed to persist project state:", err);
       }
     }, 1000);
   }
@@ -1035,7 +1050,7 @@ export class ProjectEngine {
   private loadState(): void {
     try {
       if (!existsSync(this.stateFilePath)) return;
-      const raw = readFileSync(this.stateFilePath, 'utf-8');
+      const raw = readFileSync(this.stateFilePath, "utf-8");
       const state = JSON.parse(raw);
       if (state.nextId) this.nextId = state.nextId;
       if (Array.isArray(state.projects)) {
@@ -1045,7 +1060,7 @@ export class ProjectEngine {
         console.log(`  ✓ Restored ${state.projects.length} projects from disk`);
       }
     } catch (err) {
-      console.error('  ⚠ Failed to load project state:', err);
+      console.error("  ⚠ Failed to load project state:", err);
     }
   }
 
@@ -1064,7 +1079,11 @@ export class ProjectEngine {
    * Create a full novel pipeline project with 30+ steps covering all phases:
    * premise → book bible → outline → writing → revision → assembly
    */
-  createNovelPipeline(title: string, description: string, config: NovelPipelineConfig = {}): Project {
+  createNovelPipeline(
+    title: string,
+    description: string,
+    config: NovelPipelineConfig = {},
+  ): Project {
     const id = `project-${this.nextId++}`;
     const now = new Date().toISOString();
 
@@ -1082,16 +1101,18 @@ export class ProjectEngine {
       config.themes && `Themes: ${config.themes}`,
       config.protagonistName && `Protagonist: ${config.protagonistName}`,
       config.antagonistName && `Antagonist: ${config.antagonistName}`,
-    ].filter(Boolean).join('\n');
+    ]
+      .filter(Boolean)
+      .join("\n");
 
     const premiseBlock = premiseContext
       ? `\n\nProject Configuration:\n${premiseContext}`
-      : '';
+      : "";
 
     // Calculate structural beats for outline
     const setupEnd = Math.max(Math.round(chapters * 0.12), 1);
-    const incitingEnd = Math.max(Math.round(chapters * 0.20), setupEnd + 1);
-    const midpoint = Math.round(chapters * 0.50);
+    const incitingEnd = Math.max(Math.round(chapters * 0.2), setupEnd + 1);
+    const midpoint = Math.round(chapters * 0.5);
     const twist75 = Math.round(chapters * 0.75);
     const climaxStart = chapters - 2;
     const climaxEnd = chapters - 1;
@@ -1104,7 +1125,11 @@ export class ProjectEngine {
       phase: string,
       taskType: string,
       prompt: string,
-      opts: { skill?: string; wordCountTarget?: number; chapterNumber?: number } = {}
+      opts: {
+        skill?: string;
+        wordCountTarget?: number;
+        chapterNumber?: number;
+      } = {},
     ) => {
       stepNum++;
       steps.push({
@@ -1113,7 +1138,7 @@ export class ProjectEngine {
         phase,
         taskType,
         prompt,
-        status: 'pending',
+        status: "pending",
         skill: opts.skill,
         wordCountTarget: opts.wordCountTarget,
         chapterNumber: opts.chapterNumber,
@@ -1121,63 +1146,116 @@ export class ProjectEngine {
     };
 
     // ── Phase: Premise (2 steps) ──
-    addStep('Develop premise', 'premise', 'general',
+    addStep(
+      "Develop premise",
+      "premise",
+      "general",
       `Develop this story concept into a complete premise for "${title}":${premiseBlock}\n\n${description}\n\nCreate:\n- A refined logline (1-2 sentences)\n- The central What-If question\n- Protagonist's want vs need\n- The core conflict\n- Stakes: personal, professional, and global\n- Theme statement\n- 3 comparable titles\n\nWrite a thorough, detailed response. Do not abbreviate.`,
-      { skill: 'premise' }
+      { skill: "premise" },
     );
 
-    addStep('Refine premise', 'premise', 'general',
+    addStep(
+      "Refine premise",
+      "premise",
+      "general",
       `Refine the "${title}" premise further. Using everything from the initial premise, add:\n- The antagonist's motivation and logic\n- The ticking clock: what specific deadline creates urgency?\n- 3 possible plot twists (one at midpoint, one at 75%, one final revelation)\n- The emotional core: what personal loss or wound drives the protagonist?\n\nWrite a thorough, detailed response.`,
-      { skill: 'premise' }
+      { skill: "premise" },
     );
 
     // ── Phase: Book Bible (6 steps) ──
-    addStep('Protagonist profile', 'bible', 'book_bible',
+    addStep(
+      "Protagonist profile",
+      "bible",
+      "book_bible",
       `Create a detailed protagonist profile for "${title}".\n\nInclude: full name, age, role, skills, fatal flaw, emotional wound, backstory, motivation (want vs need), character arc from beginning to end, speech patterns, physical description, and key relationships.\n\nWrite 500+ words of substantive character development.`,
-      { skill: 'book-bible' }
+      { skill: "book-bible" },
     );
 
-    addStep('Antagonist profile', 'bible', 'book_bible',
+    addStep(
+      "Antagonist profile",
+      "bible",
+      "book_bible",
       `Create a detailed antagonist profile for "${title}".\n\nInclude: capabilities, constraints, goals, motivation, backstory, communication style, personality quirks, why they believe they're right, and how they challenge the protagonist.\n\nWrite 500+ words of substantive character development.`,
-      { skill: 'book-bible' }
+      { skill: "book-bible" },
     );
 
-    addStep('Supporting characters', 'bible', 'book_bible',
+    addStep(
+      "Supporting characters",
+      "bible",
+      "book_bible",
       `Create 3-4 supporting character profiles for "${title}".\n\nFor each character include: name, age, role in the story, relationship to protagonist, motivation, backstory, personality traits, speech patterns, and how they contribute to the protagonist's arc.\n\nWrite 500+ words total.`,
-      { skill: 'book-bible' }
+      { skill: "book-bible" },
     );
 
-    addStep('Major locations', 'bible', 'book_bible',
+    addStep(
+      "Major locations",
+      "bible",
+      "book_bible",
       `Build out the major locations for "${title}".\n\nCreate 4-5 key locations. For each: name, physical description, atmosphere, who frequents it, significance to the plot, and sensory details (sounds, smells, textures, light).\n\nWrite 500+ words.`,
-      { skill: 'book-bible' }
+      { skill: "book-bible" },
     );
 
-    addStep('Timeline', 'bible', 'book_bible',
+    addStep(
+      "Timeline",
+      "bible",
+      "book_bible",
       `Create a detailed timeline for "${title}".\n\nInclude: key backstory events before the novel begins, the chronological sequence of major plot events, crisis escalation points, and the resolution timeline. Note which characters are present at each key event.\n\nWrite 500+ words.`,
-      { skill: 'book-bible' }
+      { skill: "book-bible" },
     );
 
-    addStep('World rules & consistency guide', 'bible', 'consistency',
+    addStep(
+      "World rules & consistency guide",
+      "bible",
+      "consistency",
       `Create a consistency guide and world rules document for "${title}".\n\nInclude: naming conventions, key terminology, character physical details that must remain consistent, technology/Superpowers rules, social structures, and any other details that must stay consistent across ${chapters} chapters.\n\nWrite 500+ words.`,
-      { skill: 'book-bible' }
+      { skill: "book-bible" },
     );
 
-    // ── Phase: Outline (2 steps) ──
-    addStep('Chapter outline', 'outline', 'outline',
-      `Create a ${chapters}-chapter outline for "${title}" with structural beats.\n\nFor each chapter include:\n- Chapter number and title\n- POV character\n- Primary location\n- 3-5 key beats\n- Tension level (1-10)\n- Chapter ending hook\n\nStructure:\n- Chapters 1-${setupEnd}: Setup and world introduction\n- Chapters ${setupEnd + 1}-${incitingEnd}: Inciting incident\n- Chapters ${incitingEnd + 1}-${midpoint - 1}: Rising action\n- Chapter ${midpoint}: Midpoint twist\n- Chapters ${midpoint + 1}-${twist75 - 1}: Complications multiply\n- Chapter ${twist75}: 75% twist / all is lost\n- Chapters ${climaxStart}-${climaxEnd}: Climax sequence\n- Chapter ${chapters}: Resolution\n\nYou MUST include ALL ${chapters} chapters. Do NOT stop early. Number every chapter.`,
-      { skill: 'outline' }
-    );
+    // ── Phase: Outline (segmented steps) ──
+    // Keep outline/scenes generation within manageable response sizes for long books.
+    const outlineChunkSize = 15;
+    const outlineRanges: Array<{ start: number; end: number }> = [];
+    for (let start = 1; start <= chapters; start += outlineChunkSize) {
+      const end = Math.min(start + outlineChunkSize - 1, chapters);
+      outlineRanges.push({ start, end });
+    }
 
-    addStep('Scene breakdowns', 'outline', 'outline',
-      `Expand the ${chapters}-chapter outline into scene-by-scene breakdowns for "${title}".\n\nFor each chapter, create 2-4 scenes with:\n- Scene goal and conflict\n- Key dialogue moments or reveals\n- Emotional beats\n- Estimated word count per scene\n\nTarget ~${wordsPerChapter} words per chapter. Focus especially on the inciting incident, midpoint twist, and climax sequence.`,
-      { skill: 'outline' }
-    );
+    // 1) Generate chapter outlines in chunks
+    for (let i = 0; i < outlineRanges.length; i++) {
+      const { start, end } = outlineRanges[i];
+      const part = i + 1;
+      const totalParts = outlineRanges.length;
+      addStep(
+        `Chapter outline (${start}-${end})`,
+        "outline",
+        "outline",
+        `Create the chapter outline for Part ${part}/${totalParts} of "${title}".\n\nScope:\n- ONLY outline Chapters ${start}-${end}\n- This is part of a full ${chapters}-chapter novel\n- Keep continuity with any prior completed outline parts\n\nFor each chapter include:\n- Chapter number and title\n- POV character\n- Primary location\n- 3-5 key beats\n- Tension level (1-10)\n- Chapter ending hook\n\nGlobal structure targets for the full novel:\n- Chapters 1-${setupEnd}: Setup and world introduction\n- Chapters ${setupEnd + 1}-${incitingEnd}: Inciting incident\n- Chapters ${incitingEnd + 1}-${midpoint - 1}: Rising action\n- Chapter ${midpoint}: Midpoint twist\n- Chapters ${midpoint + 1}-${twist75 - 1}: Complications multiply\n- Chapter ${twist75}: 75% twist / all is lost\n- Chapters ${climaxStart}-${climaxEnd}: Climax sequence\n- Chapter ${chapters}: Resolution\n\nOutput requirements:\n- Include EVERY chapter from ${start} to ${end}\n- Number chapters clearly\n- Do NOT write chapters outside this range`,
+        { skill: "outline" },
+      );
+    }
+
+    // 2) Generate scene breakdowns in matching chunks
+    for (let i = 0; i < outlineRanges.length; i++) {
+      const { start, end } = outlineRanges[i];
+      const part = i + 1;
+      const totalParts = outlineRanges.length;
+      addStep(
+        `Scene breakdowns (${start}-${end})`,
+        "outline",
+        "outline",
+        `Expand chapter outlines into scene-by-scene breakdowns for Part ${part}/${totalParts} of "${title}".\n\nScope:\n- ONLY Chapters ${start}-${end}\n- Keep continuity with all prior completed outline/scene parts\n- Follow the chapter outlines already created for these chapters\n\nFor each chapter, create 2-4 scenes with:\n- Scene goal and conflict\n- Key dialogue moments or reveals\n- Emotional beats\n- Estimated word count per scene\n\nTarget ~${wordsPerChapter} words per chapter.\nFocus especially on major turning points (inciting incident, midpoint, 75% twist, climax) when they fall inside this chapter range.\n\nOutput requirements:\n- Include EVERY chapter from ${start} to ${end}\n- Do NOT write scenes for chapters outside this range`,
+        { skill: "outline" },
+      );
+    }
 
     // ── Phase: Writing (N steps, one per chapter) ──
     for (let ch = 1; ch <= chapters; ch++) {
-      addStep(`Write Chapter ${ch}`, 'writing', 'creative_writing',
+      addStep(
+        `Write Chapter ${ch}`,
+        "writing",
+        "creative_writing",
         `Write Chapter ${ch} of "${title}".\n\nInstructions:\n- Follow the outline beats and scene breakdowns for this chapter\n- Check the Book Bible for character consistency\n- You MUST write at least ${wordsPerChapter} words of actual prose narrative\n- Open with a hook — no throat-clearing\n- End with a reason to turn the page\n- Include sensory details and internal tension\n- Write the COMPLETE chapter as actual prose, not a summary\n- Do NOT write fewer than ${wordsPerChapter} words. If running short, add more scenes, dialogue, internal monologue, sensory detail.`,
-        { skill: 'write', wordCountTarget: wordsPerChapter, chapterNumber: ch }
+        { skill: "write", wordCountTarget: wordsPerChapter, chapterNumber: ch },
       );
     }
 
@@ -1204,16 +1282,16 @@ export class ProjectEngine {
 
     const project: Project = {
       id,
-      type: 'novel-pipeline',
+      type: "novel-pipeline",
       title,
       description,
-      status: 'pending',
+      status: "pending",
       progress: 0,
       steps,
       createdAt: now,
       updatedAt: now,
       context: {
-        planning: 'novel-pipeline',
+        planning: "novel-pipeline",
         config,
         targetChapters: chapters,
         targetWordsPerChapter: wordsPerChapter,
@@ -1223,7 +1301,9 @@ export class ProjectEngine {
 
     this.projects.set(id, project);
     this.persistState();
-    console.log(`  ✓ Novel pipeline created: "${title}" — ${steps.length} steps, ${chapters} chapters, ~${(chapters * wordsPerChapter).toLocaleString()} words target`);
+    console.log(
+      `  ✓ Novel pipeline created: "${title}" — ${steps.length} steps, ${chapters} chapters, ~${(chapters * wordsPerChapter).toLocaleString()} words target`,
+    );
     return project;
   }
 
@@ -1232,13 +1312,20 @@ export class ProjectEngine {
   /**
    * Return all available project templates for the dashboard
    */
-  getTemplates(): Array<{ type: ProjectType; label: string; description: string; stepCount: number; stepCountLabel?: string }> {
-    return PROJECT_TEMPLATES.map(t => ({
+  getTemplates(): Array<{
+    type: ProjectType;
+    label: string;
+    description: string;
+    stepCount: number;
+    stepCountLabel?: string;
+  }> {
+    return PROJECT_TEMPLATES.map((t) => ({
       type: t.type,
       label: t.label,
       description: t.description,
-      stepCount: t.type === 'novel-pipeline' ? 30 : t.steps.length,
-      stepCountLabel: t.type === 'novel-pipeline' ? '30+ auto-generated steps' : undefined,
+      stepCount: t.type === "novel-pipeline" ? 30 : t.steps.length,
+      stepCountLabel:
+        t.type === "novel-pipeline" ? "30+ auto-generated steps" : undefined,
     }));
   }
 
@@ -1254,28 +1341,34 @@ export class ProjectEngine {
     description: string,
     skillCatalog: SkillCatalogEntry[],
     authorOSTools: string[],
-    context?: Record<string, any>
+    context?: Record<string, any>,
   ): Promise<Project> {
     if (!this.aiComplete || !this.aiSelectProvider) {
       // No AI wired — fall back to template
-      console.log('  \u26a0 AI not wired for planning \u2014 falling back to template');
+      console.log(
+        "  \u26a0 AI not wired for planning \u2014 falling back to template",
+      );
       const type = this.inferProjectType(description);
       return this.createProject(type, title, description, context);
     }
 
     try {
-      const provider = this.aiSelectProvider('general');
+      const provider = this.aiSelectProvider("general");
 
       // Build skill catalog for the planner prompt
-      const skillList = skillCatalog.map(s =>
-        `- **${s.name}** (${s.category}${s.premium ? ' \u2605' : ''}): ${s.description} [triggers: ${s.triggers.join(', ')}]`
-      ).join('\n');
+      const skillList = skillCatalog
+        .map(
+          (s) =>
+            `- **${s.name}** (${s.category}${s.premium ? " \u2605" : ""}): ${s.description} [triggers: ${s.triggers.join(", ")}]`,
+        )
+        .join("\n");
 
-      const toolList = authorOSTools.length > 0
-        ? `\n\nAuthor OS Tools Available:\n${authorOSTools.map(t => `- ${t}`).join('\n')}`
-        : '';
+      const toolList =
+        authorOSTools.length > 0
+          ? `\n\nAuthor OS Tools Available:\n${authorOSTools.map((t) => `- ${t}`).join("\n")}`
+          : "";
 
-      const validTaskTypes = Object.keys(TASK_TYPE_MAP).join(', ');
+      const validTaskTypes = Object.keys(TASK_TYPE_MAP).join(", ");
 
       const plannerPrompt = `You are a task planner for AuthorClaw, an autonomous AI writing agent.
 
@@ -1311,7 +1404,12 @@ Description: ${description}`;
       const result = await this.aiComplete({
         provider: provider.id,
         system: plannerPrompt,
-        messages: [{ role: 'user', content: `Plan the steps to accomplish: ${description}` }],
+        messages: [
+          {
+            role: "user",
+            content: `Plan the steps to accomplish: ${description}`,
+          },
+        ],
         maxTokens: 4096,
         temperature: 0.3,
       });
@@ -1327,41 +1425,50 @@ Description: ${description}`;
         const steps: ProjectStep[] = parsed.steps.map((s: any, i: number) => ({
           id: `${id}-step-${i + 1}`,
           label: s.label || `Step ${i + 1}`,
-          skill: s.skill && s.skill !== 'null' ? s.skill : undefined,
-          taskType: s.taskType || 'general',
+          skill: s.skill && s.skill !== "null" ? s.skill : undefined,
+          taskType: s.taskType || "general",
           prompt: s.prompt || description,
-          status: 'pending' as const,
+          status: "pending" as const,
         }));
 
         // Enhance with Author OS
-        const enhancedSteps = this.authorOS ? this.enhanceWithAuthorOS(steps) : steps;
+        const enhancedSteps = this.authorOS
+          ? this.enhanceWithAuthorOS(steps)
+          : steps;
 
         const project: Project = {
           id,
           type: this.inferProjectType(description),
           title,
           description,
-          status: 'pending',
+          status: "pending",
           progress: 0,
           steps: enhancedSteps,
           createdAt: now,
           updatedAt: now,
-          context: { ...context, planning: 'dynamic', planProvider: result.provider },
+          context: {
+            ...context,
+            planning: "dynamic",
+            planProvider: result.provider,
+          },
         };
 
         this.projects.set(id, project);
         this.persistState();
-        console.log(`  \u2713 AI planned ${steps.length} steps for "${title}" (via ${result.provider})`);
+        console.log(
+          `  \u2713 AI planned ${steps.length} steps for "${title}" (via ${result.provider})`,
+        );
         return project;
       }
 
       // If parsing failed, fall back to template
-      console.log('  \u26a0 AI plan parsing failed \u2014 falling back to template');
+      console.log(
+        "  \u26a0 AI plan parsing failed \u2014 falling back to template",
+      );
       const type = this.inferProjectType(description);
       return this.createProject(type, title, description, context);
-
     } catch (error) {
-      console.error('  \u2717 AI planning failed:', error);
+      console.error("  \u2717 AI planning failed:", error);
       const type = this.inferProjectType(description);
       return this.createProject(type, title, description, context);
     }
@@ -1373,7 +1480,7 @@ Description: ${description}`;
   private parsePlanResponse(text: string): any {
     // Strip markdown code fences if present
     let cleaned = text.trim();
-    cleaned = cleaned.replace(/^```(?:json)?\n?/i, '').replace(/\n?```$/i, '');
+    cleaned = cleaned.replace(/^```(?:json)?\n?/i, "").replace(/\n?```$/i, "");
     cleaned = cleaned.trim();
 
     try {
@@ -1384,7 +1491,9 @@ Description: ${description}`;
       if (jsonMatch) {
         try {
           return JSON.parse(jsonMatch[0]);
-        } catch { /* fall through */ }
+        } catch {
+          /* fall through */
+        }
       }
       return null;
     }
@@ -1400,37 +1509,47 @@ Description: ${description}`;
     type: ProjectType,
     title: string,
     description: string,
-    context?: Record<string, any>
+    context?: Record<string, any>,
   ): Project {
     const id = `project-${this.nextId++}`;
     const now = new Date().toISOString();
 
     // Find matching template
-    const template = PROJECT_TEMPLATES.find(t => t.type === type);
+    const template = PROJECT_TEMPLATES.find((t) => t.type === type);
 
     let steps: ProjectStep[];
 
     if (template) {
-      console.log(`  Project "${title}": using template "${type}" with ${template.steps.length} steps`);
+      console.log(
+        `  Project "${title}": using template "${type}" with ${template.steps.length} steps`,
+      );
       steps = template.steps.map((s, i) => ({
         id: `${id}-step-${i + 1}`,
         label: s.label,
         skill: s.skill,
         toolSuggestion: s.toolSuggestion,
         taskType: s.taskType,
-        prompt: this.expandTemplate(s.promptTemplate, { title, description, ...context }),
-        status: 'pending' as const,
+        prompt: this.expandTemplate(s.promptTemplate, {
+          title,
+          description,
+          ...context,
+        }),
+        status: "pending" as const,
       }));
     } else {
       // Custom project — single step with the user's description
-      console.warn(`  Project "${title}": no template found for type "${type}" — creating single-step project`);
-      steps = [{
-        id: `${id}-step-1`,
-        label: title,
-        taskType: this.inferTaskType(description),
-        prompt: description,
-        status: 'pending',
-      }];
+      console.warn(
+        `  Project "${title}": no template found for type "${type}" — creating single-step project`,
+      );
+      steps = [
+        {
+          id: `${id}-step-1`,
+          label: title,
+          taskType: this.inferTaskType(description),
+          prompt: description,
+          status: "pending",
+        },
+      ];
     }
 
     // Enhance steps with Author OS tool suggestions if available
@@ -1443,7 +1562,7 @@ Description: ${description}`;
       type,
       title,
       description,
-      status: 'pending',
+      status: "pending",
       progress: 0,
       steps,
       createdAt: now,
@@ -1469,7 +1588,7 @@ Description: ${description}`;
   listProjects(status?: string): Project[] {
     const projects = Array.from(this.projects.values());
     if (status) {
-      return projects.filter(p => p.status === status);
+      return projects.filter((p) => p.status === status);
     }
     return projects;
   }
@@ -1481,12 +1600,12 @@ Description: ${description}`;
     const project = this.projects.get(id);
     if (!project) return null;
 
-    project.status = 'active';
+    project.status = "active";
     project.updatedAt = new Date().toISOString();
 
-    const firstPending = project.steps.find(s => s.status === 'pending');
+    const firstPending = project.steps.find((s) => s.status === "pending");
     if (firstPending) {
-      firstPending.status = 'active';
+      firstPending.status = "active";
       return firstPending;
     }
 
@@ -1497,36 +1616,45 @@ Description: ${description}`;
    * Complete the current step and advance to the next.
    * Returns the next step, or null if the project is complete.
    */
-  completeStep(projectId: string, stepId: string, result: string): ProjectStep | null {
+  completeStep(
+    projectId: string,
+    stepId: string,
+    result: string,
+  ): ProjectStep | null {
     const project = this.projects.get(projectId);
     if (!project) return null;
 
-    const step = project.steps.find(s => s.id === stepId);
+    const step = project.steps.find((s) => s.id === stepId);
     if (step) {
-      step.status = 'completed';
+      step.status = "completed";
       step.result = result;
     }
 
     // Calculate progress (include skipped as "done")
-    const done = project.steps.filter(s => s.status === 'completed' || s.status === 'skipped').length;
+    const done = project.steps.filter(
+      (s) => s.status === "completed" || s.status === "skipped",
+    ).length;
     project.progress = Math.round((done / project.steps.length) * 100);
     project.updatedAt = new Date().toISOString();
 
     // Find next step to run — prefer pending, then check for orphaned active steps
     // (active steps can occur from race conditions in concurrent auto-execute)
-    const next = project.steps.find(s => s.status === 'pending')
-              || project.steps.find(s => s.status === 'active' && s.id !== stepId);
+    const next =
+      project.steps.find((s) => s.status === "pending") ||
+      project.steps.find((s) => s.status === "active" && s.id !== stepId);
     if (next) {
-      next.status = 'active';
+      next.status = "active";
       // Enrich the next prompt with results from completed steps
       next.prompt = this.enrichWithPriorResults(next.prompt, project);
       return next;
     }
 
     // Truly all steps done — mark project complete only if no pending/active remain
-    const remaining = project.steps.filter(s => s.status === 'pending' || s.status === 'active');
+    const remaining = project.steps.filter(
+      (s) => s.status === "pending" || s.status === "active",
+    );
     if (remaining.length === 0) {
-      project.status = 'completed';
+      project.status = "completed";
       project.completedAt = new Date().toISOString();
     }
     this.persistState();
@@ -1540,9 +1668,9 @@ Description: ${description}`;
     const project = this.projects.get(projectId);
     if (!project) return;
 
-    const step = project.steps.find(s => s.id === stepId);
+    const step = project.steps.find((s) => s.id === stepId);
     if (step) {
-      step.status = 'failed';
+      step.status = "failed";
       step.error = error;
     }
 
@@ -1557,25 +1685,27 @@ Description: ${description}`;
     const project = this.projects.get(projectId);
     if (!project) return null;
 
-    const step = project.steps.find(s => s.id === stepId);
+    const step = project.steps.find((s) => s.id === stepId);
     if (step) {
-      step.status = 'skipped';
+      step.status = "skipped";
     }
 
     // Update progress
-    const done = project.steps.filter(s => s.status === 'completed' || s.status === 'skipped').length;
+    const done = project.steps.filter(
+      (s) => s.status === "completed" || s.status === "skipped",
+    ).length;
     project.progress = Math.round((done / project.steps.length) * 100);
     project.updatedAt = new Date().toISOString();
 
     // Advance
-    const next = project.steps.find(s => s.status === 'pending');
+    const next = project.steps.find((s) => s.status === "pending");
     if (next) {
-      next.status = 'active';
+      next.status = "active";
       this.persistState();
       return next;
     }
 
-    project.status = 'completed';
+    project.status = "completed";
     project.completedAt = new Date().toISOString();
     this.persistState();
     return null;
@@ -1587,12 +1717,12 @@ Description: ${description}`;
   pauseProject(id: string): void {
     const project = this.projects.get(id);
     if (!project) return;
-    project.status = 'paused';
+    project.status = "paused";
     project.updatedAt = new Date().toISOString();
 
     // Pause any active steps
-    project.steps.forEach(s => {
-      if (s.status === 'active') s.status = 'pending';
+    project.steps.forEach((s) => {
+      if (s.status === "active") s.status = "pending";
     });
     this.persistState();
   }
@@ -1610,7 +1740,10 @@ Description: ${description}`;
    * Build the system prompt addition for a project step.
    * This tells the AI what context it's operating in.
    */
-  async buildProjectContext(project: Project, step: ProjectStep): Promise<string> {
+  async buildProjectContext(
+    project: Project,
+    step: ProjectStep,
+  ): Promise<string> {
     let context = `\n# Current Project\n\n`;
     context += `**Project**: ${project.title}\n`;
     context += `**Type**: ${project.type}\n`;
@@ -1618,11 +1751,13 @@ Description: ${description}`;
     context += `**Current Step**: ${step.label}\n\n`;
 
     // Novel pipeline: phase-aware context accumulation
-    if (project.type === 'novel-pipeline' && step.phase) {
+    if (project.type === "novel-pipeline" && step.phase) {
       context += this.buildNovelPipelineContext(project, step);
     } else {
       // Default: add results from prior steps
-      const completedSteps = project.steps.filter(s => s.status === 'completed' && s.result);
+      const completedSteps = project.steps.filter(
+        (s) => s.status === "completed" && s.result,
+      );
       if (completedSteps.length > 0) {
         context += `## Previous Steps Completed\n\n`;
         for (const cs of completedSteps) {
@@ -1636,15 +1771,19 @@ Description: ${description}`;
     // Include uploaded manuscript content (from Upload button)
     if (project.context?.uploadedContent) {
       const uploads = project.context.uploads || [];
-      const fileList = uploads.map((u: any) => `${u.filename} (${u.wordCount} words)`).join(', ');
+      const fileList = uploads
+        .map((u: any) => `${u.filename} (${u.wordCount} words)`)
+        .join(", ");
       context += `## Uploaded Manuscript\n\n`;
       context += `**Files**: ${fileList}\n\n`;
       // Include up to 30k chars of uploaded content for the AI to work with
       const uploaded = String(project.context.uploadedContent);
       if (uploaded.length > 30000) {
-        context += uploaded.substring(0, 30000) + '\n\n[...truncated at 30,000 chars — full text available in workspace...]\n\n';
+        context +=
+          uploaded.substring(0, 30000) +
+          "\n\n[...truncated at 30,000 chars — full text available in workspace...]\n\n";
       } else {
-        context += uploaded + '\n\n';
+        context += uploaded + "\n\n";
       }
     }
 
@@ -1658,12 +1797,18 @@ Description: ${description}`;
     // Add Author OS tool suggestion with actionable instructions
     if (step.toolSuggestion) {
       const toolInstructions: Record<string, string> = {
-        'workflow-engine': 'Load the relevant JSON workflow template and follow its step sequence.',
-        'book-bible': 'Use the Book Bible data for character/world consistency checks.',
-        'manuscript-autopsy': 'Run manuscript analysis for pacing and structure feedback.',
-        'format-factory': 'Use Format Factory Pro: python format_factory_pro.py <input> -t "Title" --all',
-        'creator-asset-suite': 'Generate marketing assets using the Creator Asset Suite tools.',
-        'ai-author-library': 'Reference writing prompts and voice markers from the library.',
+        "workflow-engine":
+          "Load the relevant JSON workflow template and follow its step sequence.",
+        "book-bible":
+          "Use the Book Bible data for character/world consistency checks.",
+        "manuscript-autopsy":
+          "Run manuscript analysis for pacing and structure feedback.",
+        "format-factory":
+          'Use Format Factory Pro: python format_factory_pro.py <input> -t "Title" --all',
+        "creator-asset-suite":
+          "Generate marketing assets using the Creator Asset Suite tools.",
+        "ai-author-library":
+          "Reference writing prompts and voice markers from the library.",
       };
       context += `\n**Suggested Tool**: Author OS ${step.toolSuggestion}\n`;
       const instruction = toolInstructions[step.toolSuggestion];
@@ -1679,33 +1824,40 @@ Description: ${description}`;
    * Build phase-aware context for novel pipeline steps.
    * Each phase gets relevant prior outputs without overwhelming the context window.
    */
-  private buildNovelPipelineContext(project: Project, step: ProjectStep): string {
-    let context = '';
-    const completed = project.steps.filter(s => s.status === 'completed' && s.result);
+  private buildNovelPipelineContext(
+    project: Project,
+    step: ProjectStep,
+  ): string {
+    let context = "";
+    const completed = project.steps.filter(
+      (s) => s.status === "completed" && s.result,
+    );
 
     const getPhaseResults = (phase: string) =>
-      completed.filter(s => s.phase === phase);
+      completed.filter((s) => s.phase === phase);
 
-    const truncate = (text: string, max: number) =>text
+    const truncate = (text: string, max: number) => text;
 
     switch (step.phase) {
-      case 'premise': {
+      case "premise": {
         // First premise step gets just the config; second gets first premise result
-        const priorPremise = getPhaseResults('premise');
+        const priorPremise = getPhaseResults("premise");
         if (priorPremise.length > 0) {
-          context += `## Prior Premise Work\n\n${priorPremise.map(s => s.result).join('\n\n')}\n\n`;
+          context += `## Prior Premise Work\n\n${priorPremise.map((s) => s.result).join("\n\n")}\n\n`;
         }
         break;
       }
 
-      case 'bible': {
+      case "bible": {
         // Bible steps get the full premise
-        const premiseResults = getPhaseResults('premise');
+        const premiseResults = getPhaseResults("premise");
         if (premiseResults.length > 0) {
-          context += `## Premise\n\n${premiseResults.map(s => s.result).join('\n\n')}\n\n`;
+          context += `## Premise\n\n${premiseResults.map((s) => s.result).join("\n\n")}\n\n`;
         }
         // Plus any prior bible steps
-        const priorBible = getPhaseResults('bible').filter(s => s.id !== step.id);
+        const priorBible = getPhaseResults("bible").filter(
+          (s) => s.id !== step.id,
+        );
         if (priorBible.length > 0) {
           context += `## Book Bible (so far)\n\n`;
           for (const bs of priorBible) {
@@ -1715,47 +1867,102 @@ Description: ${description}`;
         break;
       }
 
-      case 'outline': {
+      case "outline": {
         // Outline gets premise + summarized bible
-        const premiseResults = getPhaseResults('premise');
+        const premiseResults = getPhaseResults("premise");
         if (premiseResults.length > 0) {
-          context += `## Premise\n\n${truncate(premiseResults.map(s => s.result).join('\n\n'), 3000)}\n\n`;
+          context += `## Premise\n\n${truncate(premiseResults.map((s) => s.result).join("\n\n"), 3000)}\n\n`;
         }
-        const bibleResults = getPhaseResults('bible');
+        const bibleResults = getPhaseResults("bible");
         if (bibleResults.length > 0) {
           context += `## Book Bible\n\n`;
           for (const bs of bibleResults) {
             context += `### ${bs.label}\n${truncate(bs.result!, 1000)}\n\n`;
           }
         }
-        // Prior outline steps
-        const priorOutline = getPhaseResults('outline').filter(s => s.id !== step.id);
-        if (priorOutline.length > 0) {
-          context += `## Outline (so far)\n\n${priorOutline.map(s => s.result).join('\n\n')}\n\n`;
+        if (step.label.startsWith("Chapter outline (")) {
+          const rangeMatch = step.label.match(/\((\d+)-(\d+)\)/);
+          if (rangeMatch) {
+            const startChapter = parseInt(rangeMatch[1], 10);
+            // 找到所有比当前段结束章节数更小的已完成章节大纲
+            const priorOutlines = completed
+              .filter((s) => {
+                const m = s.label.match(/Chapter outline \((\d+)-(\d+)\)/);
+                return m && parseInt(m[2], 10) < startChapter;
+              })
+              .sort((a, b) => {
+                const aEnd = parseInt(a.label.match(/\((\d+)-(\d+)\)/)![2], 10);
+                const bEnd = parseInt(b.label.match(/\((\d+)-(\d+)\)/)![2], 10);
+                return aEnd - bEnd;
+              });
+            if (priorOutlines.length > 0) {
+              context += `## Prior Chapter Outlines\n\n`;
+              const priorOutline = priorOutlines[priorOutlines.length - 1];
+              context += `### ${priorOutline.label}\n${truncate(priorOutline.result!, 1500)}\n\n`;
+            }
+          }
+        }
+        // Scene breakdown steps get only the matching chapter outline for this range
+        // Chapter outline steps get no prior outline context
+        if (step.label.startsWith("Scene breakdowns (")) {
+          const rangeMatch = step.label.match(/\((\d+)-(\d+)\)/);
+          if (rangeMatch) {
+            const matchingOutlineLabel = `Chapter outline (${rangeMatch[1]}-${rangeMatch[2]})`;
+            const matchingOutline = completed.find(
+              (s) => s.label === matchingOutlineLabel,
+            );
+            if (matchingOutline) {
+              context += `## Chapter Outline\n\n${matchingOutline.result}\n\n`;
+            }
+          }
         }
         break;
       }
 
-      case 'writing': {
+      case "writing": {
         // Writing steps get: premise (brief) + bible (summaries) + outline + last 2 chapters (sliding window)
-        const premiseResults = getPhaseResults('premise');
+        const premiseResults = getPhaseResults("premise");
         if (premiseResults.length > 0) {
-          context += `## Premise\n\n${truncate(premiseResults.map(s => s.result).join('\n\n'), 1500)}\n\n`;
+          context += `## Premise\n\n${truncate(premiseResults.map((s) => s.result).join("\n\n"), 1500)}\n\n`;
         }
-        const bibleResults = getPhaseResults('bible');
+        const bibleResults = getPhaseResults("bible");
         if (bibleResults.length > 0) {
           context += `## Book Bible (key details)\n\n`;
           for (const bs of bibleResults) {
             context += `### ${bs.label}\n${truncate(bs.result!, 600)}\n\n`;
           }
         }
-        // Full outline
-        const outlineResults = getPhaseResults('outline');
-        if (outlineResults.length > 0) {
-          context += `## Outline\n\n${truncate(outlineResults.map(s => s.result).join('\n\n'), 4000)}\n\n`;
+        // Include only the chapter outline and scene breakdown that cover this chapter
+        const chapterMatch = step.label.match(/Write Chapter (\d+)/);
+        if (chapterMatch) {
+          const chNum = parseInt(chapterMatch[1], 10);
+          const allOutlineResults = getPhaseResults("outline");
+          const matchingChapterOutline = allOutlineResults.find((s) => {
+            const m = s.label.match(/Chapter outline \((\d+)-(\d+)\)/);
+            return (
+              m && chNum >= parseInt(m[1], 10) && chNum <= parseInt(m[2], 10)
+            );
+          });
+          const matchingSceneBreakdown = allOutlineResults.find((s) => {
+            const m = s.label.match(/Scene breakdowns \((\d+)-(\d+)\)/);
+            return (
+              m && chNum >= parseInt(m[1], 10) && chNum <= parseInt(m[2], 10)
+            );
+          });
+          if (matchingChapterOutline) {
+            context += `## Chapter Outline\n\n${matchingChapterOutline.result}\n\n`;
+          }
+          if (matchingSceneBreakdown) {
+            context += `## Scene Breakdowns\n\n${matchingSceneBreakdown.result}\n\n`;
+          }
+        } else {
+          const outlineResults = getPhaseResults("outline");
+          if (outlineResults.length > 0) {
+            context += `## Outline\n\n${truncate(outlineResults.map((s) => s.result).join("\n\n"), 4000)}\n\n`;
+          }
         }
         // Sliding window: last 2 completed chapter results
-        const writtenChapters = getPhaseResults('writing');
+        const writtenChapters = getPhaseResults("writing");
         if (writtenChapters.length > 0) {
           const recent = writtenChapters.slice(-2);
           context += `## Recent Chapters (for continuity)\n\n`;
@@ -1766,21 +1973,21 @@ Description: ${description}`;
         break;
       }
 
-      case 'revision': {
+      case "revision": {
         // Revision gets: bible summaries + outline summary + all chapter summaries
-        const bibleResults = getPhaseResults('bible');
+        const bibleResults = getPhaseResults("bible");
         if (bibleResults.length > 0) {
           context += `## Book Bible\n\n`;
           for (const bs of bibleResults) {
             context += `### ${bs.label}\n${truncate(bs.result!, 800)}\n\n`;
           }
         }
-        const outlineResults = getPhaseResults('outline');
+        const outlineResults = getPhaseResults("outline");
         if (outlineResults.length > 0) {
-          context += `## Outline\n\n${truncate(outlineResults.map(s => s.result).join('\n\n'), 3000)}\n\n`;
+          context += `## Outline\n\n${truncate(outlineResults.map((s) => s.result).join("\n\n"), 3000)}\n\n`;
         }
         // Brief summaries of all chapters
-        const writtenChapters = getPhaseResults('writing');
+        const writtenChapters = getPhaseResults("writing");
         if (writtenChapters.length > 0) {
           context += `## Chapter Drafts (summaries)\n\n`;
           for (const ch of writtenChapters) {
@@ -1790,17 +1997,19 @@ Description: ${description}`;
         break;
       }
 
-      case 'assembly': {
+      case "assembly": {
         // Assembly gets a brief overview of everything
-        const totalWords = getPhaseResults('writing').reduce((sum, s) => {
+        const totalWords = getPhaseResults("writing").reduce((sum, s) => {
           return sum + (s.result?.split(/\s+/).length || 0);
         }, 0);
         context += `## Pipeline Summary\n\n`;
-        context += `- Chapters written: ${getPhaseResults('writing').length}\n`;
+        context += `- Chapters written: ${getPhaseResults("writing").length}\n`;
         context += `- Approximate total words: ${totalWords.toLocaleString()}\n`;
-        context += `- Revision steps completed: ${getPhaseResults('revision').length}\n\n`;
+        context += `- Revision steps completed: ${getPhaseResults("revision").length}\n\n`;
         // Include consistency check results if available
-        const consistencyCheck = completed.find(s => s.label === 'Consistency check');
+        const consistencyCheck = completed.find(
+          (s) => s.label === "Consistency check",
+        );
         if (consistencyCheck?.result) {
           context += `## Consistency Check Results\n\n${truncate(consistencyCheck.result, 3000)}\n\n`;
         }
@@ -1828,47 +2037,79 @@ Description: ${description}`;
     const lower = description.toLowerCase();
 
     // Novel pipeline signals — ONLY when explicitly asking for a full novel/book
-    if (lower.match(/\b(novel|full book|write a book|write my book|entire book|complete novel|full manuscript|book from scratch|novel pipeline|write a complete)\b/)) {
-      return 'novel-pipeline';
+    if (
+      lower.match(
+        /\b(novel|full book|write a book|write my book|entire book|complete novel|full manuscript|book from scratch|novel pipeline|write a complete)\b/,
+      )
+    ) {
+      return "novel-pipeline";
     }
 
     // Pipeline signals — wants the full production chain
-    if (lower.match(/\b(pipeline|full production|end.?to.?end|planning through launch|all phases)\b/)) {
-      return 'pipeline';
+    if (
+      lower.match(
+        /\b(pipeline|full production|end.?to.?end|planning through launch|all phases)\b/,
+      )
+    ) {
+      return "pipeline";
     }
 
     // Book Planning signals
-    if (lower.match(/\b(plan|outline|structure|plot|brainstorm|concept|story map|beat sheet|premise|logline|synopsis)\b/)) {
-      return 'book-planning';
+    if (
+      lower.match(
+        /\b(plan|outline|structure|plot|brainstorm|concept|story map|beat sheet|premise|logline|synopsis)\b/,
+      )
+    ) {
+      return "book-planning";
     }
 
     // Book Bible signals
-    if (lower.match(/\b(world.?build|book.?bible|bible|magic system|timeline|backstory|lore|character bible|continuity)\b/)) {
-      return 'book-bible';
+    if (
+      lower.match(
+        /\b(world.?build|book.?bible|bible|magic system|timeline|backstory|lore|character bible|continuity)\b/,
+      )
+    ) {
+      return "book-bible";
     }
 
     // Book Production signals
-    if (lower.match(/\b(chapter|scene|prose|manuscript|draft|write.*chapter|write.*scene|book production)\b/)) {
-      return 'book-production';
+    if (
+      lower.match(
+        /\b(chapter|scene|prose|manuscript|draft|write.*chapter|write.*scene|book production)\b/,
+      )
+    ) {
+      return "book-production";
     }
 
     // Deep revision signals — must come before general revision
-    if (lower.match(/\b(deep.?revis|deep.?edit|full.?revision|manuscript.?review|beta.?reader|comprehensive.?edit|revision.?pipeline|deep.?analysis|manuscript.?analysis|manuscript.?audit|edit.*book|revise|rewrite|feedback|critique|proofread|consistency)\b/)) {
-      return 'deep-revision';
+    if (
+      lower.match(
+        /\b(deep.?revis|deep.?edit|full.?revision|manuscript.?review|beta.?reader|comprehensive.?edit|revision.?pipeline|deep.?analysis|manuscript.?analysis|manuscript.?audit|edit.*book|revise|rewrite|feedback|critique|proofread|consistency)\b/,
+      )
+    ) {
+      return "deep-revision";
     }
 
     // Format & Export signals
-    if (lower.match(/\b(export|format|compile|epub|pdf|docx|publish|kdp|kindle|front matter|back matter)\b/)) {
-      return 'format-export';
+    if (
+      lower.match(
+        /\b(export|format|compile|epub|pdf|docx|publish|kdp|kindle|front matter|back matter)\b/,
+      )
+    ) {
+      return "format-export";
     }
 
     // Book Launch signals
-    if (lower.match(/\b(launch|blurb|amazon desc|keywords|ad copy|advertise|promote|market|social media|book description|categories)\b/)) {
-      return 'book-launch';
+    if (
+      lower.match(
+        /\b(launch|blurb|amazon desc|keywords|ad copy|advertise|promote|market|social media|book description|categories)\b/,
+      )
+    ) {
+      return "book-launch";
     }
 
     // Default: let the AI planner figure out the best approach
-    return 'custom';
+    return "custom";
   }
 
   /**
@@ -1879,26 +2120,37 @@ Description: ${description}`;
     title: string,
     description: string,
     personaId?: string,
-    config?: NovelPipelineConfig
+    config?: NovelPipelineConfig,
   ): { pipelineId: string; projects: Project[] } {
     const pipelineId = `pipeline-${Date.now().toString(36)}-${Math.random().toString(36).substring(2, 6)}`;
-    const phases: Array<{ type: ProjectType; label: string; phaseNum: number }> = [
-      { type: 'book-planning', label: `${title} — Planning`, phaseNum: 1 },
-      { type: 'book-bible', label: `${title} — Book Bible`, phaseNum: 2 },
-      { type: 'book-production', label: `${title} — Production`, phaseNum: 3 },
-      { type: 'deep-revision', label: `${title} — Deep Revision`, phaseNum: 4 },
-      { type: 'format-export', label: `${title} — Format & Export`, phaseNum: 5 },
-      { type: 'book-launch', label: `${title} — Book Launch`, phaseNum: 6 },
+    const phases: Array<{
+      type: ProjectType;
+      label: string;
+      phaseNum: number;
+    }> = [
+      { type: "book-planning", label: `${title} — Planning`, phaseNum: 1 },
+      { type: "book-bible", label: `${title} — Book Bible`, phaseNum: 2 },
+      { type: "book-production", label: `${title} — Production`, phaseNum: 3 },
+      { type: "deep-revision", label: `${title} — Deep Revision`, phaseNum: 4 },
+      {
+        type: "format-export",
+        label: `${title} — Format & Export`,
+        phaseNum: 5,
+      },
+      { type: "book-launch", label: `${title} — Book Launch`, phaseNum: 6 },
     ];
 
     const projects: Project[] = [];
     for (const phase of phases) {
       let project: Project;
-      if (phase.type === 'book-production') {
+      if (phase.type === "book-production") {
         // Book production uses the novel pipeline chapter-writing logic
         project = this.createBookProduction(phase.label, description, config);
       } else {
-        project = this.createProject(phase.type, phase.label, description, { pipelineTitle: title, ...config });
+        project = this.createProject(phase.type, phase.label, description, {
+          pipelineTitle: title,
+          ...config,
+        });
       }
       project.pipelineId = pipelineId;
       project.pipelinePhase = phase.phaseNum;
@@ -1915,7 +2167,11 @@ Description: ${description}`;
   /**
    * Create a Book Production project with dynamic chapter steps.
    */
-  createBookProduction(title: string, description: string, config: NovelPipelineConfig = {}): Project {
+  createBookProduction(
+    title: string,
+    description: string,
+    config: NovelPipelineConfig = {},
+  ): Project {
     const id = `project-${this.nextId++}`;
     const now = new Date().toISOString();
     const chapters = Math.min(Math.max(config.targetChapters || 25, 1), 200);
@@ -1926,22 +2182,22 @@ Description: ${description}`;
       steps.push({
         id: `${id}-step-${ch * 2 - 1}`,
         label: `Write Chapter ${ch}`,
-        phase: 'writing',
-        skill: 'write',
-        taskType: 'creative_writing',
+        phase: "writing",
+        skill: "write",
+        taskType: "creative_writing",
         prompt: `Write Chapter ${ch} of "${title}".\n\nInstructions:\n- Follow the outline beats and book bible for this chapter\n- You MUST write at least ${wordsPerChapter} words of actual prose narrative\n- Open with a hook — no throat-clearing\n- End with a reason to turn the page\n- Include sensory details and internal tension\n- Write the COMPLETE chapter as actual prose, not a summary\n\n${description}`,
-        status: 'pending',
+        status: "pending",
         wordCountTarget: wordsPerChapter,
         chapterNumber: ch,
       });
       steps.push({
         id: `${id}-step-${ch * 2}`,
         label: `Self-review Chapter ${ch}`,
-        phase: 'writing',
-        skill: 'revise',
-        taskType: 'revision',
+        phase: "writing",
+        skill: "revise",
+        taskType: "revision",
         prompt: `Review Chapter ${ch} we just wrote. Check for: voice consistency, pacing, show vs tell, dialogue quality, sensory details, word count target (${wordsPerChapter}+). Suggest improvements but focus on completing the chapter, not perfection.`,
-        status: 'pending',
+        status: "pending",
         chapterNumber: ch,
       });
     }
@@ -1949,19 +2205,19 @@ Description: ${description}`;
     // Assembly step
     steps.push({
       id: `${id}-step-${chapters * 2 + 1}`,
-      label: 'Compile manuscript',
-      phase: 'assembly',
-      taskType: 'general',
+      label: "Compile manuscript",
+      phase: "assembly",
+      taskType: "general",
       prompt: `Generate a completion report for "${title}". Total chapters: ${chapters}. Target: ~${(chapters * wordsPerChapter).toLocaleString()} words. Assess strengths, areas for improvement, and next steps.`,
-      status: 'pending',
+      status: "pending",
     });
 
     const project: Project = {
       id,
-      type: 'book-production',
+      type: "book-production",
       title,
       description,
-      status: 'pending',
+      status: "pending",
       progress: 0,
       steps,
       createdAt: now,
@@ -1984,7 +2240,7 @@ Description: ${description}`;
    */
   getPipelineProjects(pipelineId: string): Project[] {
     return Array.from(this.projects.values())
-      .filter(p => p.pipelineId === pipelineId)
+      .filter((p) => p.pipelineId === pipelineId)
       .sort((a, b) => (a.pipelinePhase || 0) - (b.pipelinePhase || 0));
   }
 
@@ -1998,11 +2254,19 @@ Description: ${description}`;
   private async getCoreLessons(): Promise<string | null> {
     const now = Date.now();
     // Return cached version if less than 5 minutes old
-    if (this.coreLessonsCache !== null && (now - this.coreLessonsCacheTime) < 300000) {
+    if (
+      this.coreLessonsCache !== null &&
+      now - this.coreLessonsCacheTime < 300000
+    ) {
       return this.coreLessonsCache;
     }
 
-    const coreLessonsPath = join(this.rootDir, 'workspace', '.agent', 'core-lessons.md');
+    const coreLessonsPath = join(
+      this.rootDir,
+      "workspace",
+      ".agent",
+      "core-lessons.md",
+    );
     if (!existsSync(coreLessonsPath)) {
       this.coreLessonsCache = null;
       this.coreLessonsCacheTime = now;
@@ -2010,10 +2274,11 @@ Description: ${description}`;
     }
 
     try {
-      const content = await readFile(coreLessonsPath, 'utf-8');
+      const content = await readFile(coreLessonsPath, "utf-8");
       // Strip the header, just get the lessons content (max 1500 chars to not bloat context)
-      const body = content.replace(/^#.*\n\n\*[^*]+\*\n\n/, '').trim();
-      this.coreLessonsCache = body.length > 1500 ? body.substring(0, 1500) + '\n...' : body;
+      const body = content.replace(/^#.*\n\n\*[^*]+\*\n\n/, "").trim();
+      this.coreLessonsCache =
+        body.length > 1500 ? body.substring(0, 1500) + "\n..." : body;
       this.coreLessonsCacheTime = now;
       return this.coreLessonsCache;
     } catch {
@@ -2028,38 +2293,41 @@ Description: ${description}`;
   private expandTemplate(template: string, vars: Record<string, any>): string {
     let result = template;
     for (const [key, value] of Object.entries(vars)) {
-      if (typeof value === 'string') {
-        result = result.replace(new RegExp(`\\{\\{${key}\\}\\}`, 'g'), value);
+      if (typeof value === "string") {
+        result = result.replace(new RegExp(`\\{\\{${key}\\}\\}`, "g"), value);
       }
     }
     // Clean up any remaining unexpanded vars
-    result = result.replace(/\{\{[^}]+\}\}/g, '');
+    result = result.replace(/\{\{[^}]+\}\}/g, "");
     return result;
   }
 
   private inferTaskType(description: string): string {
     const type = this.inferProjectType(description);
     const taskMap: Record<ProjectType, string> = {
-      'book-planning': 'outline',
-      'book-bible': 'book_bible',
-      'book-production': 'creative_writing',
-      'deep-revision': 'revision',
-      'format-export': 'general',
-      'book-launch': 'marketing',
-      'novel-pipeline': 'creative_writing',
-      pipeline: 'general',
-      custom: 'general',
+      "book-planning": "outline",
+      "book-bible": "book_bible",
+      "book-production": "creative_writing",
+      "deep-revision": "revision",
+      "format-export": "general",
+      "book-launch": "marketing",
+      "novel-pipeline": "creative_writing",
+      pipeline: "general",
+      custom: "general",
     };
-    return taskMap[type] || 'general';
+    return taskMap[type] || "general";
   }
 
   private enhanceWithAuthorOS(steps: ProjectStep[]): ProjectStep[] {
     if (!this.authorOS) return steps;
 
     const availableTools = this.authorOS.getAvailableTools();
-    return steps.map(step => {
+    return steps.map((step) => {
       // If the step suggests a tool, check if it's available
-      if (step.toolSuggestion && !availableTools.includes(step.toolSuggestion)) {
+      if (
+        step.toolSuggestion &&
+        !availableTools.includes(step.toolSuggestion)
+      ) {
         // Tool not available — clear suggestion but keep the step
         step.toolSuggestion = undefined;
       }
@@ -2071,11 +2339,13 @@ Description: ${description}`;
     // Prior step results are already included in buildProjectContext() system context.
     // Don't duplicate them in the user message — it wastes tokens and can confuse the AI.
     // Just add a brief note referencing the previous step so the AI knows to build on it.
-    if (prompt.includes('we developed') || prompt.includes('we created')) {
+    if (prompt.includes("we developed") || prompt.includes("we created")) {
       return prompt;
     }
 
-    const lastCompleted = [...project.steps].reverse().find(s => s.status === 'completed' && s.result);
+    const lastCompleted = [...project.steps]
+      .reverse()
+      .find((s) => s.status === "completed" && s.result);
     if (lastCompleted) {
       return `[Build on the work from "${lastCompleted.label}" — see system context for details.]\n\n${prompt}`;
     }
