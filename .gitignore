@@ -5,7 +5,6 @@ config/.vault/
 config/user.json
 
 # Workspace runtime data (user-generated, not code)
-workspace/projects/
 workspace/research/
 workspace/exports/
 workspace/.memory/

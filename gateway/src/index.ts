@@ -845,6 +845,10 @@ class AuthorClawGateway {
         }));
     const exec = async () => {
       // ── Call AI ──
+      this.audit.log("ai", "requesting length", {
+        systemPrompt: systemPrompt.length,
+        messages: messages.length,
+      });
       try {
         const response = await this.aiRouter.complete({
           provider: provider.id,
