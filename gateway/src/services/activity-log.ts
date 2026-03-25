@@ -82,14 +82,15 @@ export class ActivityLog {
    * Log an activity entry. Appends to daily JSONL file and pushes to SSE clients.
    */
   async log(entry: Omit<ActivityEntry, 'timestamp'>): Promise<void> {
+    const now = new Date();
     const full: ActivityEntry = {
       ...entry,
-      timestamp: new Date().toISOString(),
+      timestamp: now.toLocaleString('sv-SE', { timeZone: 'Asia/Shanghai' }).replace(' ', 'T') + '+08:00',
       metadata: entry.metadata ? this.sanitize(entry.metadata) : undefined,
     };
 
     // Append to daily JSONL
-    const dateStr = full.timestamp.slice(0, 10); // YYYY-MM-DD
+    const dateStr = now.toLocaleDateString('sv-SE', { timeZone: 'Asia/Shanghai' });
     const filePath = join(this.logDir, `${dateStr}.jsonl`);
     await appendFile(filePath, JSON.stringify(full) + '\n', 'utf-8');
 

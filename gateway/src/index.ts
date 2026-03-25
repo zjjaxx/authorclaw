@@ -697,7 +697,9 @@ class AuthorClawGateway {
     console.log("  ═══════════════════════════════════");
     console.log("");
   }
-
+  async syncStepResult(projectId: string): Promise<void> {
+    await this.projectEngine.syncStepResult(`project-${projectId}`);
+  }
   private setupWebSocket(): void {
     this.io.on("connection", (socket) => {
       const origin = socket.handshake.headers.origin;
@@ -846,8 +848,7 @@ class AuthorClawGateway {
     const exec = async () => {
       // ── Call AI ──
       this.audit.log("ai", "requesting length", {
-        systemPrompt: systemPrompt.length,
-        messages: messages.length,
+        promptLength: systemPrompt.length+messages[messages.length - 1].content.length,
       });
       try {
         const response = await this.aiRouter.complete({
@@ -2341,9 +2342,20 @@ process.on("SIGTERM", async () => {
   process.exit(0);
 });
 
-gateway.start().catch((error) => {
-  console.error("Failed to start AuthorClaw:", error);
-  process.exit(1);
-});
+const args = process.argv.slice(2);
+const projectIdArg = args.find((a) => a.startsWith("--projectId="));
+const projectId = projectIdArg ? projectIdArg.split("=")[1] : undefined;
+
+if (projectId) {
+  gateway.start().then(() => gateway.syncStepResult(projectId)).catch((error) => {
+    console.error("Failed to sync step result:", error);
+    process.exit(1);
+  });
+} else {
+  gateway.start().catch((error) => {
+    console.error("Failed to start AuthorClaw:", error);
+    process.exit(1);
+  });
+}
 
 export { AuthorClawGateway };

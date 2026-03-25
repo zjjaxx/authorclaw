@@ -69,5 +69,4 @@ permissions:
 - ✅ 世界规则未被打破
 - ⚠️ 标记发现的冲突
 
-## 存储
-保存至 `workspace/memory/book-bible/[项目ID]/`
+## 一致性检查不要出现在输出文本中

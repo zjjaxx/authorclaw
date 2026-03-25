@@ -1014,6 +1014,52 @@ export class ProjectEngine {
     this.loadState(); // Restore projects from disk on startup
   }
 
+  async syncStepResult(projectId: string): Promise<{ synced: number; skipped: number }> {
+    const project = this.projects.get(projectId);
+    if (!project) return { synced: 0, skipped: 0 };
+
+    const { readFile: rf } = await import("fs/promises");
+    const projectDir = join(
+      this.rootDir,
+      "workspace",
+      "projects",
+      project.title.toLowerCase(),
+    );
+
+    let synced = 0;
+    let skipped = 0;
+
+    for (const step of project.steps) {
+      const stepFileName = `${step.id}-${step.label.toLowerCase().replace(/[^a-z0-9]+/g, "-")}.md`;
+      const filePath = join(projectDir, stepFileName);
+
+      if (!existsSync(filePath)) {
+        step.status='pending'
+        skipped++;
+        continue;
+      }
+
+      // File exists — read content and mark as completed if not already
+      const raw = await rf(filePath, "utf-8");
+      // Strip the leading "# {label}\n\n" header if present
+      const content = raw.replace(/^# .+\n\n/, "");
+      step.status = "completed";
+      step.result = content;
+      synced++;
+    }
+
+    if (synced > 0) {
+      project.status="pending"
+      project.updatedAt = new Date().toISOString();
+      // Recompute progress
+      const completed = project.steps.filter((s) => s.status === "completed").length;
+      project.progress = Math.round((completed / project.steps.length) * 100);
+      this.persistState();
+    }
+
+    return { synced, skipped };
+  }
+
   /**
    * Persist all project state to disk (debounced — max once per second).
    * Non-fatal: if save fails, projects continue to work in-memory.
@@ -1167,7 +1213,7 @@ export class ProjectEngine {
       "Protagonist profile",
       "bible",
       "book_bible",
-      `Create a detailed protagonist profile for "${title}".\n\nInclude: full name, age, role, skills, fatal flaw, emotional wound, backstory, motivation (want vs need), character arc from beginning to end, speech patterns, physical description, and key relationships.\n\nWrite 500+ words of substantive character development.`,
+      `Create a detailed protagonist profile for "${title}".\n\nInclude: full name, age, role, skills, fatal flaw, emotional wound, backstory, motivation (want vs need), character arc from beginning to end, speech patterns, physical description, and key relationships.\n\nWrite 500+ words of substantive character development. Keep total output under 4000 Chinese characters.`,
       { skill: "book-bible" },
     );
 
@@ -1175,7 +1221,7 @@ export class ProjectEngine {
       "Antagonist profile",
       "bible",
       "book_bible",
-      `Create a detailed antagonist profile for "${title}".\n\nInclude: capabilities, constraints, goals, motivation, backstory, communication style, personality quirks, why they believe they're right, and how they challenge the protagonist.\n\nWrite 500+ words of substantive character development.`,
+      `Create a detailed antagonist profile for "${title}".\n\nInclude: capabilities, constraints, goals, motivation, backstory, communication style, personality quirks, why they believe they're right, and how they challenge the protagonist.\n\nWrite 500+ words of substantive character development. Keep total output under 4000 Chinese characters.`,
       { skill: "book-bible" },
     );
 
@@ -1183,7 +1229,7 @@ export class ProjectEngine {
       "Supporting characters",
       "bible",
       "book_bible",
-      `Create 3-4 supporting character profiles for "${title}".\n\nFor each character include: name, age, role in the story, relationship to protagonist, motivation, backstory, personality traits, speech patterns, and how they contribute to the protagonist's arc.\n\nWrite 500+ words total.`,
+      `Create 3-4 supporting character profiles for "${title}".\n\nFor each character include: name, age, role in the story, relationship to protagonist, motivation, backstory, personality traits, speech patterns, and how they contribute to the protagonist's arc.\n\nWrite 500+ words total. Keep total output under 4000 Chinese characters.`,
       { skill: "book-bible" },
     );
 
@@ -1191,7 +1237,7 @@ export class ProjectEngine {
       "Major locations",
       "bible",
       "book_bible",
-      `Build out the major locations for "${title}".\n\nCreate 4-5 key locations. For each: name, physical description, atmosphere, who frequents it, significance to the plot, and sensory details (sounds, smells, textures, light).\n\nWrite 500+ words.`,
+      `Build out the major locations for "${title}".\n\nCreate 4-5 key locations. For each: name, physical description, atmosphere, who frequents it, significance to the plot, and sensory details (sounds, smells, textures, light).\n\nWrite 500+ words. Keep total output under 4000 Chinese characters.`,
       { skill: "book-bible" },
     );
 
@@ -1199,7 +1245,7 @@ export class ProjectEngine {
       "Timeline",
       "bible",
       "book_bible",
-      `Create a detailed timeline for "${title}".\n\nInclude: key backstory events before the novel begins, the chronological sequence of major plot events, crisis escalation points, and the resolution timeline. Note which characters are present at each key event.\n\nWrite 500+ words.`,
+      `Create a detailed timeline for "${title}".\n\nInclude: key backstory events before the novel begins, the chronological sequence of major plot events, crisis escalation points, and the resolution timeline. Note which characters are present at each key event.\n\nWrite 500+ words. Keep total output under 4000 Chinese characters.`,
       { skill: "book-bible" },
     );
 
@@ -1207,7 +1253,7 @@ export class ProjectEngine {
       "World rules & consistency guide",
       "bible",
       "consistency",
-      `Create a consistency guide and world rules document for "${title}".\n\nInclude: naming conventions, key terminology, character physical details that must remain consistent, technology/Superpowers rules, social structures, and any other details that must stay consistent across ${chapters} chapters.\n\nWrite 500+ words.`,
+      `Create a consistency guide and world rules document for "${title}".\n\nInclude: naming conventions, key terminology, character physical details that must remain consistent, technology/Superpowers rules, social structures, and any other details that must stay consistent across ${chapters} chapters.\n\nWrite 500+ words. Keep total output under 4000 Chinese characters.`,
       { skill: "book-bible" },
     );
 
@@ -1254,7 +1300,7 @@ export class ProjectEngine {
         `Write Chapter ${ch}`,
         "writing",
         "creative_writing",
-        `Write Chapter ${ch} of "${title}".\n\nInstructions:\n- Follow the outline beats and scene breakdowns for this chapter\n- Check the Book Bible for character consistency\n- You MUST write at least ${wordsPerChapter} words of actual prose narrative\n- Open with a hook — no throat-clearing\n- End with a reason to turn the page\n- Include sensory details and internal tension\n- Write the COMPLETE chapter as actual prose, not a summary\n- Do NOT write fewer than ${wordsPerChapter} words. If running short, add more scenes, dialogue, internal monologue, sensory detail.`,
+        `Write Chapter ${ch} of "${title}".\n\nInstructions:\n- Follow the outline beats and scene breakdowns for this chapter\n- Check the Book Bible for character consistency\n- You MUST write at least ${wordsPerChapter} words of actual prose narrative\n- You MUST NOT exceed ${Math.round(wordsPerChapter * 1.5)} words — stay focused and avoid padding\n- Open with a hook — no throat-clearing\n- End with a reason to turn the page\n- Include sensory details and internal tension\n- Write the COMPLETE chapter as actual prose, not a summary\n`,
         { skill: "write", wordCountTarget: wordsPerChapter, chapterNumber: ch },
       );
     }

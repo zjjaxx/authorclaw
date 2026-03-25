@@ -14,7 +14,6 @@ workspace/.audio/
 workspace/audio/
 workspace/documents/
 workspace/memory/
-workspace/.config/
 workspace/.activity/
 workspace/test-upload.txt
 *.log

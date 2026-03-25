@@ -20,8 +20,12 @@ export class AuditLog {
   }
 
   async log(category: string, action: string, data: Record<string, any>): Promise<void> {
+    const now = new Date();
+    const timestamp = now.toLocaleString('sv-SE', { timeZone: 'Asia/Shanghai' }).replace(' ', 'T') + '+08:00';
+    const dateStr = now.toLocaleDateString('sv-SE', { timeZone: 'Asia/Shanghai' });
+
     const entry = {
-      timestamp: new Date().toISOString(),
+      timestamp,
       category,
       action,
       data,
@@ -33,7 +37,7 @@ export class AuditLog {
     this.lastHash = createHash('sha256').update(entryStr).digest('hex').substring(0, 16);
 
     const logLine = JSON.stringify({ ...entry, hash: this.lastHash }) + '\n';
-    const logFile = join(this.logDir, `${new Date().toISOString().split('T')[0]}.jsonl`);
+    const logFile = join(this.logDir, `${dateStr}.jsonl`);
 
     await appendFile(logFile, logLine);
   }
