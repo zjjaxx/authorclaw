@@ -5,6 +5,7 @@ author: AuthorClaw
 version: 1.0.0
 triggers:
   - "premise"
+  - "general"
   - "story idea"
   - "book concept"
   - "what if"
@@ -42,7 +43,3 @@ permissions:
 - ✅ 能想象它出现在书店哪个区域？  
 - ✅ 是否有足够素材支撑完整长篇？  
 - ✅ 是否兼具新颖性（脱颖而出）与熟悉感（易于销售）？
-
-## 输出格式
-
-将最终确定的前提保存至项目`premise.md`文件，并完整记录所有组成部分。

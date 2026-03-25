@@ -109,19 +109,20 @@ export class SkillLoader {
     return { name, description, category, triggers, permissions, content };
   }
 
-  matchSkills(input: string): string[] {
+  matchSkills(overrideTaskType: string): string[] {
     const matched: string[] = [];
-    const lower = input.toLowerCase();
+    const lower = overrideTaskType.toLowerCase();
 
     for (const [, skill] of this.skills) {
       for (const trigger of skill.triggers) {
-        if (lower.includes(trigger.toLowerCase())) {
+        if (lower==trigger.toLowerCase()) {
           matched.push(skill.content);
           console.log("skill name:", skill.name,"category:",skill.category);
           break;
         }
       }
     }
+    console.log("matched skills end \n");
 
     return matched;
   }

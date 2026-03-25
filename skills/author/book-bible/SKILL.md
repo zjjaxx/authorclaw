@@ -5,6 +5,8 @@ author: AuthorClaw
 version: 1.0.0
 triggers:
   - "book bible"
+  - "book_bible"
+  - "bible"
   - "character"
   - "character sheet"
   - "timeline"
@@ -17,11 +19,11 @@ permissions:
   - file:write
 ---
 
-# 书籍圣经技能
+# 作品档案设定技能
 
 维护一个关于书中世界的动态参考文档。所有事实、角色细节和时间线事件都记录在此，确保内容前后一致。
 
-## 书籍圣经章节
+## 作品档案章节
 
 ### 角色
 为每个角色追踪：

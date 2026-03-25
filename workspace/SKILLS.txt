@@ -28,7 +28,7 @@ Auto-generated on startup — 18 skills loaded
 
   book-bible
     Maintain world consistency - characters, timeline, locations, rules, items
-    Keywords: book bible, character, character sheet, timeline, world building, world bible, consistency, continuity
+    Keywords: book bible, book_bible, bible, character, character sheet, timeline, world building, world bible, consistency, continuity
 
   dialogue
     Craft authentic dialogue with distinct character voices and subtext
@@ -48,11 +48,11 @@ Auto-generated on startup — 18 skills loaded
 
   outline
     Create structured outlines using popular frameworks (Save the Cat, 3-Act, Hero's Journey, custom)
-    Keywords: outline, structure, plot, beats, save the cat, hero's journey, three act, story structure
+    Keywords: outline, creative_writing, structure, plot, beats, save the cat, hero's journey, three act, story structure
 
   premise
     Develop compelling story premises with market awareness and emotional hooks
-    Keywords: premise, story idea, book concept, what if, high concept, elevator pitch
+    Keywords: premise, general, story idea, book concept, what if, high concept, elevator pitch
 
   research
     Constrained internet research with source tracking for fiction and nonfiction projects
@@ -68,7 +68,7 @@ Auto-generated on startup — 18 skills loaded
 
   write
     Draft scenes, chapters, and passages matching the author's voice and style
-    Keywords: write, draft, write a scene, write chapter, continue writing, write the
+    Keywords: creative_writing, write, draft, write a scene, write chapter, continue writing, write the
 
 ── Marketing Skills (2) ──
 

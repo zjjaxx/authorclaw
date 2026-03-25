@@ -776,7 +776,7 @@ class AuthorClawGateway {
     const soul = this.soul.getFullContext();
     const memories = await this.memory.getRelevant(content);
     const activeProject = await this.memory.getActiveProject();
-    const skills = this.skills.matchSkills(content);
+    const skills = this.skills.matchSkills(overrideTaskType || "");
     const heartbeatContext = this.heartbeat.getContext();
 
     // ── Determine best AI provider for this task ──
@@ -1044,7 +1044,7 @@ class AuthorClawGateway {
     prompt += "你是一个完全自主的写作专家。你可以而且应该:\n";
     prompt += "- 按要求撰写完整的章节、场景或完整的大纲\n";
     prompt += "- 生成完整的角色设定表、世界观构建文档和剧情概要\n";
-    prompt += "- 在任务需要时起草长篇内容（每篇2000-5000字以上）\n";
+    prompt += "- 在任务需要时起草长篇内容（每篇2000-3000字）\n";
 
     // Author OS tools awareness
     const osTools = this.authorOS?.getAvailableTools() || [];
@@ -1095,18 +1095,6 @@ class AuthorClawGateway {
         }
       }
     }
-
-    prompt += "# 安全规则\n\n";
-    prompt += "- 切勿在工作区沙盒外执行命令\n";
-    const domains = this.research
-      .getAllowedDomains()
-      .filter((d) => !d.startsWith("*.") && !d.startsWith("www."))
-      .sort()
-      .join(", ");
-    prompt += `- 您只能研究这些已批准的域名: ${domains}\n`;
-    prompt +=
-      "- 禁止访问未列入此列表的任何网址。如果用户询问未列出的域名，请告知他们该域名已获批准，但需要通过研究网关获取。\n";
-    prompt += "- 切勿分享API密钥、令牌或保险库内容\n";
 
     return prompt;
   }

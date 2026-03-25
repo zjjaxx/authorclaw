@@ -4,6 +4,7 @@ description: Draft scenes, chapters, and passages matching the author's voice an
 author: AuthorClaw
 version: 1.0.0
 triggers:
+  - "creative_writing"
   - "write"
   - "draft"
   - "write a scene"
@@ -21,7 +22,7 @@ permissions:
 ## 动笔前必查事项
 1. **语言风格档案**——匹配作者的句式结构、用词习惯和行文节奏  
 2. **风格指南**——遵守既定规则（叙事视角、时态、禁用词列表）  
-3. **作品圣经**——保持与已设定事实的一致性  
+3. **作品档案**——保持与已设定事实的一致性  
 4. **大纲**——遵循当前场景/章节的预设情节节点  
 5. **角色声线**——每个角色应有独特的说话方式  
 
