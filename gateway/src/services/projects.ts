@@ -1014,7 +1014,9 @@ export class ProjectEngine {
     this.loadState(); // Restore projects from disk on startup
   }
 
-  async syncStepResult(projectId: string): Promise<{ synced: number; skipped: number }> {
+  async syncStepResult(
+    projectId: string,
+  ): Promise<{ synced: number; skipped: number }> {
     const project = this.projects.get(projectId);
     if (!project) return { synced: 0, skipped: 0 };
 
@@ -1034,7 +1036,7 @@ export class ProjectEngine {
       const filePath = join(projectDir, stepFileName);
 
       if (!existsSync(filePath)) {
-        step.status='pending'
+        step.status = "pending";
         skipped++;
         continue;
       }
@@ -1049,10 +1051,12 @@ export class ProjectEngine {
     }
 
     if (synced > 0) {
-      project.status="pending"
+      project.status = "pending";
       project.updatedAt = new Date().toISOString();
       // Recompute progress
-      const completed = project.steps.filter((s) => s.status === "completed").length;
+      const completed = project.steps.filter(
+        (s) => s.status === "completed",
+      ).length;
       project.progress = Math.round((completed / project.steps.length) * 100);
       this.persistState();
     }
@@ -1204,16 +1208,31 @@ export class ProjectEngine {
       "完善前提",
       "premise",
       "general",
-      `在初始前提的基础上，进一步深化《${title}》的故事前提。在已有内容之上，补充：\n- 反派的动机与内在逻辑\n- 倒计时压力：什么具体的截止时间制造了紧迫感？\n- 3个可能的情节转折（一个在中点，一个在75%处，一个最终揭示）\n- 情感核心：什么样的个人伤痛或创伤驱动着主人公？\n\n请给出详尽、完整的回答。`,
+      `在初始前提的基础上，进一步深化《${title}》的故事前提。在已有内容之上，补充：\n- 反派的动机与内在逻辑\n- 3个可能的情节转折（一个在中点，一个在75%处，一个最终揭示）\n- 核心：什么样的事情驱动着主人公前进？\n\n请给出详尽、完整的回答。`,
       { skill: "premise" },
     );
 
     // ── Phase: Book Bible (6 steps) ──
     addStep(
+      "世界规则与一致性指南",
+      "bible",
+      "consistency",
+      `为《${title}》创作一份世界规则与一致性指南。\n\n包含：命名规范、核心术语、角色外貌中必须保持一致的细节、科技/超能力规则、社会结构，以及在全书${chapters}章中必须前后一致的其他所有细节。\n\n请写出500字以上的内容，总字数不超过4000字。`,
+      { skill: "book-bible" },
+    );
+    addStep(
+      "战力体系",
+      "bible",
+      "book_bible",
+      `为《${title}》设计一套严谨、自洽的战力体系。\n\n请详细构建以下内容：\n\n**一、境界划分**\n- 列出完整的战力等级（至少6-8个境界），每级附上专有名称\n- 每个境界的核心特征：能力阈值、感知范围、肉体强化幅度\n- 相邻境界之间的压制比例（例：跨一境战力差距约为X倍）\n\n**二、晋升机制**\n- 突破每个境界所需的条件（资源、感悟、考验）\n- 瓶颈与卡关的原因，以及对应的突破方式\n- 有无天赋差异？天才与普通修炼者的差距如何体现？\n\n**三、战力来源与体系规则**\n- 力量的本质来源（灵气、异能、血脉、科技……）\n- 核心战斗资源（体力/气/精神力等）的上限、消耗与恢复规则\n- 技能/招式的学习门槛与稀有度分级\n- 克制关系（属性相克、体系压制）\n\n**四、主要角色战力定位**\n- 主人公初始境界及其成长轨迹（对应全书${chapters}章的关键晋升节点）\n- 反派及核心配角的境界与独特战力特征\n- 全书最终的战力天花板设定\n\n**五、平衡性与叙事约束**\n- 高境界强者为何无法横扫一切的合理限制（禁区、代价、体制）\n- 低境界角色如何能在高手云集的世界中发挥关键作用\n- 战力通货膨胀的防止机制\n\n请给出详尽、完整的回答，确保体系内部逻辑自洽，总字数不超过4000字。`,
+      { skill: "book-bible" },
+    );
+    
+    addStep(
       "主角档案",
       "bible",
       "book_bible",
-      `为《${title}》创作一份详细的主人公档案。\n\n包含：全名、年龄、身份、技能、致命缺陷、情感创伤、背景故事、动机（欲望与需求）、从头到尾的人物弧线、说话方式、外貌描写以及重要人际关系。\n\n请写出500字以上的实质性人物塑造内容，总字数不超过4000字。`,
+      `为《${title}》创作一份详细的主人公档案。\n\n包含：全名、年龄、身份、技能、致命缺陷、情感创伤、背景故事、动机（欲望与需求）、从头到尾的人物弧线、说话方式、外貌描写以及重要人际关系。\n\n必须严格对齐已建立的战力体系，明确主人公初始境界、阶段性晋升节点与对应战力变化，确保后续剧情可持续升级且不失衡。\n\n请写出500字以上的实质性人物塑造内容，总字数不超过4000字。`,
       { skill: "book-bible" },
     );
 
@@ -1221,7 +1240,7 @@ export class ProjectEngine {
       "反派档案",
       "bible",
       "book_bible",
-      `为《${title}》创作一份详细的反派档案。\n\n包含：能力、局限、目标、动机、背景故事、沟通风格、性格特点、他们为何认为自己是正确的，以及他们如何挑战主人公。\n\n请写出500字以上的实质性人物塑造内容，总字数不超过4000字。`,
+      `为《${title}》创作一份详细的反派档案。\n\n包含：能力、局限、目标、动机、背景故事、沟通风格、性格特点、他们为何认为自己是正确的，以及他们如何挑战主人公。\n\n必须严格对齐已建立的战力体系，给出反派境界定位与压制逻辑。\n\n请写出500字以上的实质性人物塑造内容，总字数不超过4000字。`,
       { skill: "book-bible" },
     );
 
@@ -1229,7 +1248,7 @@ export class ProjectEngine {
       "配角档案",
       "bible",
       "book_bible",
-      `为《${title}》创作3-4位配角档案。\n\n每个角色包含：姓名、年龄、在故事中的身份、与主人公的关系、动机、背景故事、性格特征、说话方式，以及他们如何推动主人公的成长弧线。\n\n请写出500字以上的内容，总字数不超过4000字。`,
+      `为《${title}》创作3-4位配角档案。\n\n每个角色包含：姓名、年龄、在故事中的身份、与主人公的关系、动机、背景故事、性格特征、说话方式\n\n必须严格对齐已建立的战力体系，标注每位配角的境界层级与功能定位。\n\n请写出500字以上的内容，总字数不超过4000字。`,
       { skill: "book-bible" },
     );
 
@@ -1237,7 +1256,7 @@ export class ProjectEngine {
       "主要场景地点",
       "bible",
       "book_bible",
-      `构建《${title}》的主要场景地点。\n\n创作4-5个关键地点，每个地点包含：名称、外观描述、氛围、常驻人物、对情节的意义，以及感官细节（声音、气味、质感、光线）。\n\n请写出500字以上的内容，总字数不超过4000字。`,
+      `构建《${title}》的主要场景地点。\n\n创作4-5个关键地点，每个地点包含：名称、外观描述、氛围、常驻人物、对情节的意义，以及感官细节（声音、气味、质感、光线）。\n\n必须严格对齐已建立的战力体系，说明各地点对应的战力层级、修炼/战斗价值与风险边界，为主人公境界递进提供合理场域。\n\n请写出500字以上的内容，总字数不超过4000字。`,
       { skill: "book-bible" },
     );
 
@@ -1245,15 +1264,7 @@ export class ProjectEngine {
       "时间线",
       "bible",
       "book_bible",
-      `为《${title}》创作一份详细的时间线。\n\n包含：小说开始前的关键背景事件、主要情节事件的时间顺序、危机升级节点，以及结局时间线。标注每个关键事件中出现的角色。\n\n请写出500字以上的内容，总字数不超过4000字。`,
-      { skill: "book-bible" },
-    );
-
-    addStep(
-      "世界规则与一致性指南",
-      "bible",
-      "consistency",
-      `为《${title}》创作一份世界规则与一致性指南。\n\n包含：命名规范、核心术语、角色外貌中必须保持一致的细节、科技/超能力规则、社会结构，以及在全书${chapters}章中必须前后一致的其他所有细节。\n\n请写出500字以上的内容，总字数不超过4000字。`,
+      `为《${title}》创作一份详细的时间线。\n\n包含：小说开始前的关键背景事件、主要情节事件的时间顺序、危机升级节点，以及结局时间线。标注每个关键事件中出现的角色。\n\n必须严格对齐已建立的战力体系，明确主人公每次境界提升发生的章节区间、触发事件与代价，保证“随剧情推进逐步变强”的节奏清晰可追踪。\n\n请写出500字以上的内容，总字数不超过4000字。`,
       { skill: "book-bible" },
     );
 
@@ -1275,7 +1286,7 @@ export class ProjectEngine {
         `章节大纲 (${start}-${end})`,
         "outline",
         "outline",
-        `为《${title}》第${part}/${totalParts}部分创作章节大纲。\n\n范围：\n- 仅大纲第${start}-${end}章\n- 这是完整${chapters}章小说的一部分\n- 与已完成的前续大纲保持连贯\n\n每章包含：\n- 章节编号与标题\n- 视角人物\n- 主要场景地点\n- 3-5个关键情节节拍\n- 张力等级（1-10）\n- 章节结尾钩子\n\n全书结构目标：\n- 第1-${setupEnd}章：铺垫与世界观建立\n- 第${setupEnd + 1}-${incitingEnd}章：触发事件\n- 第${incitingEnd + 1}-${midpoint - 1}章：上升动作\n- 第${midpoint}章：中点转折\n- 第${midpoint + 1}-${twist75 - 1}章：矛盾激化\n- 第${twist75}章：75%转折/至暗时刻\n- 第${climaxStart}-${climaxEnd}章：高潮序列\n- 第${chapters}章：结局\n\n输出要求：\n- 必须包含第${start}至${end}章的每一章\n- 章节编号清晰\n- 不得写出此范围以外的章节`,
+        `为《${title}》第${part}/${totalParts}部分创作章节大纲。\n\n范围：\n- 仅大纲第${start}-${end}章\n- 这是完整${chapters}章小说的一部分\n- 与已完成的前续大纲保持连贯\n\n每章包含：\n- 章节编号与标题\n- 视角人物\n- 主要场景地点\n- 3-5个关键情节节拍\n- 张力等级（1-10）\n- 章节结尾钩子\n\n全书结构目标：\n- 第1-${setupEnd}章：铺垫与世界观建立\n- 第${setupEnd + 1}-${incitingEnd}章：触发事件\n- 第${incitingEnd + 1}-${midpoint - 1}章：上升动作\n- 第${midpoint}章：中点转折\n- 第${midpoint + 1}-${twist75 - 1}章：矛盾激化\n- 第${twist75}章：75%转折/至暗时刻\n- 第${climaxStart}-${climaxEnd}章：高潮序列\n- 第${chapters}章：结局\n\n战力体系约束：\n- 严格遵循已建立的战力体系与境界规则\n- 为本范围内每章标注主人公战力状态与境界变化（如有）\n- 主人公境界必须随剧情推进一步步提高，战力一步步变强，避免无铺垫跳级\n\n输出要求：\n- 必须包含第${start}至${end}章的每一章\n- 章节编号清晰\n- 不得写出此范围以外的章节`,
         { skill: "outline" },
       );
     }
@@ -1289,7 +1300,7 @@ export class ProjectEngine {
         `逐场景分解 (${start}-${end})`,
         "outline",
         "outline",
-        `将《${title}》第${part}/${totalParts}部分的章节大纲展开为逐场景分解。\n\n范围：\n- 仅处理第${start}-${end}章\n- 与所有已完成的前续大纲/场景部分保持连贯\n- 遵循这些章节已创作的章节大纲\n\n每章创作2-4个场景，每个场景包含：\n- 场景目标与冲突\n- 关键对话时刻或揭示\n- 情感节拍\n- 预估场景字数\n\n每章目标约${wordsPerChapter}字。\n当重要转折点（触发事件、中点、75%转折、高潮）落在此章节范围内时，须重点展开。\n\n输出要求：\n- 必须包含第${start}至${end}章的每一章\n- 不得为此范围以外的章节创作场景`,
+        `将《${title}》第${part}/${totalParts}部分的章节大纲展开为逐场景分解。\n\n范围：\n- 仅处理第${start}-${end}章\n- 与所有已完成的前续大纲/场景部分保持连贯\n- 遵循这些章节已创作的章节大纲\n\n每章创作2-4个场景，每个场景包含：\n- 场景目标与冲突\n- 关键对话时刻或揭示\n- 情感节拍\n- 预估场景字数\n\n战力体系约束：\n- 严格遵循已建立的战力体系与境界规则\n- 在场景层面体现主人公境界与战力的递进（修炼、实战、顿悟、代价）\n- 主人公境界必须随剧情推进一步步提高，战力一步步变强，避免突兀暴涨\n\n每章目标约${wordsPerChapter}字。\n当重要转折点（触发事件、中点、75%转折、高潮）落在此章节范围内时，须重点展开。\n\n输出要求：\n- 必须包含第${start}至${end}章的每一章\n- 不得为此范围以外的章节创作场景`,
         { skill: "outline" },
       );
     }
@@ -1300,7 +1311,7 @@ export class ProjectEngine {
         `撰写第 ${ch} 章`,
         "writing",
         "creative_writing",
-        `撰写《${title}》第${ch}章。\n\n写作要求：\n- 遵循本章的大纲节拍与场景分解\n- 对照作品设定档案核查人物一致性\n- 必须写出至少${wordsPerChapter}字的正式叙事散文\n- 字数不得超过${Math.round(wordsPerChapter * 1.5)}字——保持专注，避免注水\n- 以钩子开篇，不要废话铺垫\n- 以翻页动力结尾\n- 融入感官细节与内心张力\n- 写出完整章节正文，而非摘要\n`,
+        `撰写《${title}》第${ch}章。\n\n写作要求：\n- 遵循本章的大纲节拍与场景分解\n- 对照作品设定档案核查人物一致性\n- 严格遵循已建立的战力体系与境界规则\n- 让主人公境界随剧情推进一步步提高、战力一步步变强；每次提升都要有铺垫、触发与代价\n- 必须写出至少${wordsPerChapter}字的正式叙事散文\n- 字数不得超过${Math.round(wordsPerChapter * 1.5)}字——保持专注，避免注水\n- 以钩子开篇，不要废话铺垫\n- 以翻页动力结尾\n- 融入感官细节与内心张力\n- 写出完整章节正文，而非摘要\n`,
         { skill: "write", wordCountTarget: wordsPerChapter, chapterNumber: ch },
       );
     }

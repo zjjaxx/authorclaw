@@ -835,7 +835,7 @@ export function createAPIRoutes(app: Application, gateway: any, rootDir?: string
         try {
           const projectDir = join(workspaceDir, 'projects', currentProject.title.toLowerCase());
           await mkdir(projectDir, { recursive: true });
-          const stepFileName = `${activeStep.id}-${activeStep.label.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.md`;
+          const stepFileName = `${activeStep.id}-${activeStep.label.toLowerCase()}.md`;
           await writeFile(join(projectDir, stepFileName), `# ${activeStep.label}\n\n${response}`, 'utf-8');
         } catch { /* non-fatal */ }
 
