@@ -1217,7 +1217,7 @@ export class ProjectEngine {
       "世界规则与一致性指南",
       "bible",
       "consistency",
-      `为《${title}》创作一份世界规则与一致性指南。\n\n包含：命名规范、核心术语、角色外貌中必须保持一致的细节、科技/超能力规则、社会结构，以及在全书${chapters}章中必须前后一致的其他所有细节。\n\n请写出500字以上的内容，总字数不超过4000字。`,
+      `为《${title}》创作一份世界规则与一致性指南。\n\n包含：命名规范、核心术语、角色外貌中必须保持一致的细节、科技/超能力规则、社会结构，以及在全书${chapters}章中必须前后一致的其他所有细节。\n\n请写出500字以上的内容，总字数不超过3000字。`,
       { skill: "book-bible" },
     );
     addStep(
@@ -1232,7 +1232,7 @@ export class ProjectEngine {
       "主角档案",
       "bible",
       "book_bible",
-      `为《${title}》创作一份详细的主人公档案。\n\n包含：全名、年龄、身份、技能、致命缺陷、情感创伤、背景故事、动机（欲望与需求）、从头到尾的人物弧线、说话方式、外貌描写以及重要人际关系。\n\n必须严格对齐已建立的战力体系，明确主人公初始境界、阶段性晋升节点与对应战力变化，确保后续剧情可持续升级且不失衡。\n\n请写出500字以上的实质性人物塑造内容，总字数不超过4000字。`,
+      `为《${title}》创作一份详细的主人公档案。\n\n包含：全名、年龄、身份、技能、致命缺陷、情感创伤、背景故事、动机（欲望与需求）、从头到尾的人物弧线、说话方式、外貌描写以及重要人际关系。\n\n必须严格对齐已建立的战力体系，明确主人公初始境界、阶段性晋升节点与对应战力变化，确保后续剧情可持续升级且不失衡。\n\n请写出500字以上的实质性人物塑造内容，总字数不超过3000字。`,
       { skill: "book-bible" },
     );
 
@@ -1240,7 +1240,7 @@ export class ProjectEngine {
       "反派档案",
       "bible",
       "book_bible",
-      `为《${title}》创作一份详细的反派档案。\n\n包含：能力、局限、目标、动机、背景故事、沟通风格、性格特点、他们为何认为自己是正确的，以及他们如何挑战主人公。\n\n必须严格对齐已建立的战力体系，给出反派境界定位与压制逻辑。\n\n请写出500字以上的实质性人物塑造内容，总字数不超过4000字。`,
+      `为《${title}》创作一份详细的反派档案。\n\n包含：能力、局限、目标、动机、背景故事、沟通风格、性格特点、他们为何认为自己是正确的，以及他们如何挑战主人公。\n\n必须严格对齐已建立的战力体系，给出反派境界定位与压制逻辑。\n\n请写出500字以上的实质性人物塑造内容，总字数不超过3000字。`,
       { skill: "book-bible" },
     );
 
@@ -1248,15 +1248,7 @@ export class ProjectEngine {
       "配角档案",
       "bible",
       "book_bible",
-      `为《${title}》创作3-4位配角档案。\n\n每个角色包含：姓名、年龄、在故事中的身份、与主人公的关系、动机、背景故事、性格特征、说话方式\n\n必须严格对齐已建立的战力体系，标注每位配角的境界层级与功能定位。\n\n请写出500字以上的内容，总字数不超过4000字。`,
-      { skill: "book-bible" },
-    );
-
-    addStep(
-      "主要场景地点",
-      "bible",
-      "book_bible",
-      `构建《${title}》的主要场景地点。\n\n创作4-5个关键地点，每个地点包含：名称、外观描述、氛围、常驻人物、对情节的意义，以及感官细节（声音、气味、质感、光线）。\n\n必须严格对齐已建立的战力体系，说明各地点对应的战力层级、修炼/战斗价值与风险边界，为主人公境界递进提供合理场域。\n\n请写出500字以上的内容，总字数不超过4000字。`,
+      `为《${title}》创作3-4位配角档案。\n\n每个角色包含：姓名、年龄、在故事中的身份、与主人公的关系、动机、背景故事、性格特征、说话方式\n\n必须严格对齐已建立的战力体系，标注每位配角的境界层级与功能定位。\n\n请写出500字以上的内容，总字数不超过3000字。`,
       { skill: "book-bible" },
     );
 
@@ -1276,6 +1268,22 @@ export class ProjectEngine {
       const end = Math.min(start + outlineChunkSize - 1, chapters);
       outlineRanges.push({ start, end });
     }
+    const shouldGenerateSceneBreakdown = (start: number, end: number) => {
+      const overlaps = (aStart: number, aEnd: number, bStart: number, bEnd: number) =>
+        aStart <= bEnd && bStart <= aEnd;
+
+      const earlyChaptersEnd = Math.min(5, chapters);
+      const keyRanges = [
+        { start: 1, end: earlyChaptersEnd },                // opening clarity matters most
+        { start: midpoint, end: midpoint },                 // midpoint turn
+        { start: twist75, end: twist75 },                   // 75% turn / darkest turn
+        { start: climaxStart, end: Math.max(climaxEnd, chapters) }, // climax + ending run
+      ];
+
+      return keyRanges.some((range) =>
+        overlaps(start, end, range.start, range.end),
+      );
+    };
 
     // 1) Generate chapter outlines in chunks
     for (let i = 0; i < outlineRanges.length; i++) {
@@ -1286,32 +1294,34 @@ export class ProjectEngine {
         `章节大纲 (${start}-${end})`,
         "outline",
         "outline",
-        `为《${title}》第${part}/${totalParts}部分创作章节大纲。\n\n范围：\n- 仅大纲第${start}-${end}章\n- 这是完整${chapters}章小说的一部分\n- 与已完成的前续大纲保持连贯\n\n每章包含：\n- 章节编号与标题\n- 视角人物\n- 主要场景地点\n- 3-5个关键情节节拍\n- 张力等级（1-10）\n- 章节结尾钩子\n\n全书结构目标：\n- 第1-${setupEnd}章：铺垫与世界观建立\n- 第${setupEnd + 1}-${incitingEnd}章：触发事件\n- 第${incitingEnd + 1}-${midpoint - 1}章：上升动作\n- 第${midpoint}章：中点转折\n- 第${midpoint + 1}-${twist75 - 1}章：矛盾激化\n- 第${twist75}章：75%转折/至暗时刻\n- 第${climaxStart}-${climaxEnd}章：高潮序列\n- 第${chapters}章：结局\n\n战力体系约束：\n- 严格遵循已建立的战力体系与境界规则\n- 为本范围内每章标注主人公战力状态与境界变化（如有）\n- 主人公境界必须随剧情推进一步步提高，战力一步步变强，避免无铺垫跳级\n\n输出要求：\n- 必须包含第${start}至${end}章的每一章\n- 章节编号清晰\n- 不得写出此范围以外的章节`,
+        `为《${title}》第${part}/${totalParts}部分创作章节大纲。\n\n范围：\n- 仅大纲第${start}-${end}章\n- 这是完整${chapters}章小说的一部分\n- 与已完成的前续大纲保持连贯\n\n目标：产出“好写、好读、不堆设定”的章节大纲。每章首先要保证读者不迷路，其次才是铺设世界观与长线伏笔。\n\n每章包含：\n- 章节编号与标题\n- 视角人物\n- 主要场景地点\n- 3-5个关键情节节拍\n- 张力等级（1-10）\n- 章节结尾钩子\n\n前期信息释放原则：\n- 尤其是前5章，优先建立主角当前困局、行动目标、阻碍与风险\n- 背景信息分层释放：先让读者明白“现在发生了什么”，再逐步解释“世界为什么会这样”\n- 不要把世界观、组织设定、战力体系一次性前置讲完\n- 单章内尽量只引入少量必要新概念；能通过行动、后果、对话侧写传达的，不要改成设定说明\n- 前3章必须让读者清楚：主角是谁、眼前缺什么/怕什么、故事最核心的异常点是什么\n- 每章都要回答三个问题：主角现在想做什么、什么在阻止他、局面因此如何变化\n\n全书结构目标：\n- 第1-${setupEnd}章：铺垫与世界观建立\n- 第${setupEnd + 1}-${incitingEnd}章：触发事件\n- 第${incitingEnd + 1}-${midpoint - 1}章：上升动作\n- 第${midpoint}章：中点转折\n- 第${midpoint + 1}-${twist75 - 1}章：矛盾激化\n- 第${twist75}章：75%转折/至暗时刻\n- 第${climaxStart}-${climaxEnd}章：高潮序列\n- 第${chapters}章：结局\n\n战力体系约束：\n- 严格遵循已建立的战力体系与境界规则\n- 为本范围内每章标注主人公战力状态与境界变化（如有）\n- 主人公境界必须随剧情推进一步步提高，战力一步步变强，避免无铺垫跳级\n- 战力设计服务情节与人物压力，不要让章节节拍沦为升级展示\n\n输出要求：\n- 必须包含第${start}至${end}章的每一章\n- 章节编号清晰\n- 大纲要具体可写，但避免写成设定说明书\n- 不得写出此范围以外的章节`,
         { skill: "outline" },
       );
     }
 
-    // 2) Generate scene breakdowns in matching chunks
+    // 2) Generate scene breakdowns only for the most important ranges.
+    // This keeps key chapters tightly guided without forcing every chapter
+    // through an extra planning layer that can make the prose feel templated.
     for (let i = 0; i < outlineRanges.length; i++) {
       const { start, end } = outlineRanges[i];
+      if (!shouldGenerateSceneBreakdown(start, end)) continue;
       const part = i + 1;
       const totalParts = outlineRanges.length;
       addStep(
         `逐场景分解 (${start}-${end})`,
         "outline",
         "outline",
-        `将《${title}》第${part}/${totalParts}部分的章节大纲展开为逐场景分解。\n\n范围：\n- 仅处理第${start}-${end}章\n- 与所有已完成的前续大纲/场景部分保持连贯\n- 遵循这些章节已创作的章节大纲\n\n每章创作2-4个场景，每个场景包含：\n- 场景目标与冲突\n- 关键对话时刻或揭示\n- 情感节拍\n- 预估场景字数\n\n战力体系约束：\n- 严格遵循已建立的战力体系与境界规则\n- 在场景层面体现主人公境界与战力的递进（修炼、实战、顿悟、代价）\n- 主人公境界必须随剧情推进一步步提高，战力一步步变强，避免突兀暴涨\n\n每章目标约${wordsPerChapter}字。\n当重要转折点（触发事件、中点、75%转折、高潮）落在此章节范围内时，须重点展开。\n\n输出要求：\n- 必须包含第${start}至${end}章的每一章\n- 不得为此范围以外的章节创作场景`,
+        `将《${title}》第${part}/${totalParts}部分的章节大纲展开为逐场景分解。\n\n范围：\n- 仅处理第${start}-${end}章\n- 与所有已完成的前续大纲/场景部分保持连贯\n- 遵循这些章节已创作的章节大纲\n\n目标：产出“能直接拿来写小说正文”的场景分解，而不是把大纲进一步拆成说明书。\n\n每章创作2-4个场景，每个场景包含：\n- 场景目标与冲突\n- 关键对话时刻或揭示\n- 情感节拍\n- 预估场景字数\n\n场景设计原则：\n- 每个场景都必须推动局面变化：拿到信息、遭遇阻碍、关系变化、风险升级、计划落空等至少一种\n- 场景之间要有明确因果衔接，不要只是把提纲点依次排开\n- 优先设计“可被写成正文的具体时刻”，少写抽象说明\n- 单个场景不要承担过多功能；避免一边交代背景、一边解释规则、一边推进冲突、一边埋多条伏笔\n- 前期章节尤其要保证读者不迷路：场景先讲清人物在做什么、为什么做、眼前出了什么问题\n- 背景信息尽量附着在动作、对话、后果和选择上，不要把场景写成设定讲解节点\n- 新名词与新规则控制密度，优先复用已出现的信息\n\n战力体系约束：\n- 严格遵循已建立的战力体系与境界规则\n- 在场景层面体现主人公境界与战力的递进（修炼、实战、顿悟、代价）\n- 主人公境界必须随剧情推进一步步提高，战力一步步变强，避免突兀暴涨\n- 战力成长要服务冲突与人物处境，不要让场景沦为能力展示清单\n\n每章目标约${wordsPerChapter}字。\n当重要转折点（触发事件、中点、75%转折、高潮）落在此章节范围内时，须重点展开。\n\n输出要求：\n- 必须包含第${start}至${end}章的每一章\n- 每个场景要具体、可执行、可直接转化为正文\n- 不得为此范围以外的章节创作场景`,
         { skill: "outline" },
       );
     }
-
     // ── Phase: Writing (N steps, one per chapter) ──
     for (let ch = 1; ch <= chapters; ch++) {
       addStep(
         `撰写第 ${ch} 章`,
         "writing",
         "creative_writing",
-        `撰写《${title}》第${ch}章。\n\n写作要求：\n- 遵循本章的大纲节拍与场景分解\n- 对照作品设定档案核查人物一致性\n- 严格遵循已建立的战力体系与境界规则\n- 让主人公境界随剧情推进一步步提高、战力一步步变强；每次提升都要有铺垫、触发与代价\n- 必须写出至少${wordsPerChapter}字的正式叙事散文\n- 字数不得超过${Math.round(wordsPerChapter * 1.5)}字——保持专注，避免注水\n- 以钩子开篇，不要废话铺垫\n- 以翻页动力结尾\n- 融入感官细节与内心张力\n- 写出完整章节正文，而非摘要\n`,
+        `撰写《${title}》第${ch}章。\n\n你的首要目标：交付“像真人小说家写的章节正文”，不是把大纲和设定说明重新说一遍。\n\n写作原则：\n- 严格遵循本章的大纲、场景分解、作品设定档案与战力体系，但要把这些内容自然融进叙事，不要显眼讲解\n- 优先写现场感、动作、对话、身体反应与局面变化；设定只写当前场景必须知道的部分\n- 不要把场景目标、情感节拍、世界规则、升级逻辑逐条翻译成正文\n- 控制抽象术语密度；能写具体画面就不要写空泛概念\n- 让人物像人在应对麻烦，而不是作者在展示设定\n- 句子要有松紧变化，允许朴素直接，避免每一句都很重、很满、很修辞\n- 对话尽量带潜台词，避免角色把信息直接讲透\n- 主人公的战力成长必须有铺垫、触发与代价，但成长应体现在事件后果与身体负担中，不要生硬讲解境界\n\n章节要求：\n- 必须写出至少${wordsPerChapter}字的正文\n- 字数不得超过${Math.round(wordsPerChapter * 1.5)}字\n- 开头尽快进入失衡状态，不要铺垫式热身\n- 结尾留下明确的局面变化或翻页动力，但不要为了钩子硬拐一下\n- 写出完整章节正文，而非摘要、提纲、说明或注释\n- 除章节标题与正文外，不要附加任何解释性文字\n`,
         { skill: "write", wordCountTarget: wordsPerChapter, chapterNumber: ch },
       );
     }
