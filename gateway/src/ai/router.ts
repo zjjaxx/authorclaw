@@ -156,7 +156,7 @@ export class AIRouter {
         model: this.config.claude?.model || 'claude-sonnet-4-5-20250929',
         tier: 'paid',
         available: true,
-        endpoint: 'https://api.anthropic.com/v1',
+        endpoint: 'https://api.duckcoding.ai/v1', 
         maxTokens: 4096,
         costPer1kInput: 0.003,
         costPer1kOutput: 0.015,
